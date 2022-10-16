@@ -34,12 +34,12 @@ namespace PRO1
             this.buttonNewPolygon = new System.Windows.Forms.Button();
             this.buttonClearSpace = new System.Windows.Forms.Button();
             this.buttonDebug = new System.Windows.Forms.Button();
+            this.buttonLMB = new System.Windows.Forms.Button();
             this.groupBoxAlgorithm = new System.Windows.Forms.GroupBox();
             this.radioButton2 = new System.Windows.Forms.RadioButton();
             this.radioButton1 = new System.Windows.Forms.RadioButton();
-            this.buttonLMB = new System.Windows.Forms.Button();
-            this.canvas = new System.Windows.Forms.PictureBox();
             this.buttonEdge = new System.Windows.Forms.Button();
+            this.canvas = new System.Windows.Forms.PictureBox();
             this.tableLayoutPanel1.SuspendLayout();
             this.panelControl.SuspendLayout();
             this.groupBoxAlgorithm.SuspendLayout();
@@ -77,9 +77,9 @@ namespace PRO1
             this.panelControl.Location = new System.Drawing.Point(633, 3);
             this.panelControl.Name = "panelControl";
             this.panelControl.RowCount = 6;
-            this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 42.85714F));
-            this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 57.14286F));
-            this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 55F));
+            this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.90909F));
+            this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 49.09091F));
+            this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 66F));
             this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 67F));
             this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 118F));
             this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 143F));
@@ -88,11 +88,12 @@ namespace PRO1
             // 
             // buttonNewPolygon
             // 
-            this.buttonNewPolygon.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.buttonNewPolygon.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonNewPolygon.Location = new System.Drawing.Point(3, 3);
             this.buttonNewPolygon.Name = "buttonNewPolygon";
-            this.buttonNewPolygon.Size = new System.Drawing.Size(142, 46);
+            this.buttonNewPolygon.Size = new System.Drawing.Size(142, 50);
             this.buttonNewPolygon.TabIndex = 1;
             this.buttonNewPolygon.Text = "New Polygon";
             this.buttonNewPolygon.UseVisualStyleBackColor = true;
@@ -100,9 +101,11 @@ namespace PRO1
             // 
             // buttonClearSpace
             // 
-            this.buttonClearSpace.Location = new System.Drawing.Point(3, 55);
+            this.buttonClearSpace.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonClearSpace.Location = new System.Drawing.Point(3, 59);
             this.buttonClearSpace.Name = "buttonClearSpace";
-            this.buttonClearSpace.Size = new System.Drawing.Size(142, 57);
+            this.buttonClearSpace.Size = new System.Drawing.Size(142, 48);
             this.buttonClearSpace.TabIndex = 2;
             this.buttonClearSpace.Text = "Clear Drawing Space";
             this.buttonClearSpace.UseVisualStyleBackColor = true;
@@ -110,12 +113,27 @@ namespace PRO1
             // 
             // buttonDebug
             // 
-            this.buttonDebug.Location = new System.Drawing.Point(3, 124);
+            this.buttonDebug.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonDebug.Location = new System.Drawing.Point(3, 113);
             this.buttonDebug.Name = "buttonDebug";
-            this.buttonDebug.Size = new System.Drawing.Size(142, 30);
+            this.buttonDebug.Size = new System.Drawing.Size(142, 60);
             this.buttonDebug.TabIndex = 3;
             this.buttonDebug.Text = "button1";
             this.buttonDebug.UseVisualStyleBackColor = true;
+            // 
+            // buttonLMB
+            // 
+            this.buttonLMB.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonLMB.Location = new System.Drawing.Point(3, 179);
+            this.buttonLMB.Name = "buttonLMB";
+            this.buttonLMB.Size = new System.Drawing.Size(142, 61);
+            this.buttonLMB.TabIndex = 4;
+            this.buttonLMB.Text = "button1";
+            this.buttonLMB.UseVisualStyleBackColor = true;
             // 
             // groupBoxAlgorithm
             // 
@@ -153,14 +171,17 @@ namespace PRO1
             this.radioButton1.Text = "radioButton1";
             this.radioButton1.UseVisualStyleBackColor = true;
             // 
-            // buttonLMB
+            // buttonEdge
             // 
-            this.buttonLMB.Location = new System.Drawing.Point(3, 179);
-            this.buttonLMB.Name = "buttonLMB";
-            this.buttonLMB.Size = new System.Drawing.Size(142, 21);
-            this.buttonLMB.TabIndex = 4;
-            this.buttonLMB.Text = "button1";
-            this.buttonLMB.UseVisualStyleBackColor = true;
+            this.buttonEdge.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonEdge.Location = new System.Drawing.Point(3, 246);
+            this.buttonEdge.Name = "buttonEdge";
+            this.buttonEdge.Size = new System.Drawing.Size(142, 112);
+            this.buttonEdge.TabIndex = 5;
+            this.buttonEdge.Text = "button1";
+            this.buttonEdge.UseVisualStyleBackColor = true;
             // 
             // canvas
             // 
@@ -176,15 +197,6 @@ namespace PRO1
             this.canvas.MouseMove += new System.Windows.Forms.MouseEventHandler(this.canvas_MouseMove);
             this.canvas.MouseUp += new System.Windows.Forms.MouseEventHandler(this.canvas_MouseUp);
             // 
-            // buttonEdge
-            // 
-            this.buttonEdge.Location = new System.Drawing.Point(3, 246);
-            this.buttonEdge.Name = "buttonEdge";
-            this.buttonEdge.Size = new System.Drawing.Size(142, 43);
-            this.buttonEdge.TabIndex = 5;
-            this.buttonEdge.Text = "button1";
-            this.buttonEdge.UseVisualStyleBackColor = true;
-            // 
             // CGP1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -196,6 +208,8 @@ namespace PRO1
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Computer Graphics Project 1";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.CGP1_KeyDown);
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.CGP1_KeyUp);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.panelControl.ResumeLayout(false);
             this.groupBoxAlgorithm.ResumeLayout(false);
