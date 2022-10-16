@@ -12,19 +12,32 @@ namespace PRO1
 {
     public partial class CGP1 : Form
     {
-        public const int radius = 10, edgeThickness = 2;
+        public const int radius = 10, edgeThickness = 2, toleranceSquared = 50, toleranceRadius = 4;
         public Rectangle rec;
-        public Pen penVertex;
-        public Pen penEdge, penEdgeHighlight, penEdgeConstLength, penEdgeRelation;
-        public Brush brushVertex = Brushes.Black;
-        public Brush brushVertexHighlight = Brushes.DarkOrange;
-        public Brush brushVertexSelected = Brushes.Red;
-        public Brush brushEdge = Brushes.Black;
-        public Brush brushEdgeHighlight = Brushes.Orange;
-        public Brush brushEdgeConstLength = Brushes.Green;
-        public Brush brushEdgeRelation = Brushes.OrangeRed;
+        //public Pen penVertex;
+        //public Pen penEdge, penEdgeHighlight, penEdgeConstLength, penEdgeRelation;
+        //public Brush brushVertex = Brushes.Black;
+        //public Brush brushVertexHighlight = Brushes.DarkOrange;
+        //public Brush brushVertexSelected = Brushes.Red;
+        //public Brush brushEdge = Brushes.Black;
+        //public Brush brushEdgeHighlight = Brushes.Orange;
+        //public Brush brushEdgeConstLength = Brushes.Green;
+        //public Brush brushEdgeRelation = Brushes.Red;
+        // 0 - normal, 1 - highlight/selected, 2 - constant length, 3 - relation
+        public enum brushesColor {normal, highlight, constlen, relation }
+        public Brush[] brushesVertex = { Brushes.Black, Brushes.DarkOrange, Brushes.Green, Brushes.Red };
+        public Pen[] pensEdge;
         public Graphics graph;
         public Bitmap drawArea;
+
+        public AppState state;
+        public Polygon tempPolygon;
+        public List<Polygon> polygons;
+
+        public Vertex selectedVertex = null;
+        public (Vertex v1, Vertex v2)? selectedEdge = null;
+        public bool isPressedLMB = false;
+        public (int x, int y)[] positionRelative; // array used when moving edges - holds relative positions of 2 vertices based on the point we're holding the edge by
 
         public enum AppState
         {
@@ -35,7 +48,7 @@ namespace PRO1
         public class Vertex
         {
             public Point point;
-            public Brush brush { get; set; }
+            public brushesColor brush { get; set; }
             public void ChangePlacement(Point _p)
             {
                 point = _p;
@@ -45,7 +58,7 @@ namespace PRO1
                 point.X = _X;
                 point.Y = _Y;
             }
-            public Vertex(Point _p, Brush _brush)
+            public Vertex(Point _p, brushesColor _brush)
             {
                 point = _p;
                 brush = _brush;
@@ -55,7 +68,7 @@ namespace PRO1
         {
             public List<Vertex> vertices;
 
-            public void SetVertexBrush(Brush _brush)
+            public void SetVertexBrush(brushesColor _brush)
             {
                 foreach(Vertex v in this.vertices)
                 {
@@ -64,20 +77,79 @@ namespace PRO1
             }
         }
 
-        public AppState state;
-        public Polygon tempPolygon;
-        public List<Polygon> polygons;
+        public int EdgeLenSquared(Vertex v1, Vertex v2)
+        {
+            int x = v1.point.X - v2.point.X;
+            int y = v1.point.Y - v2.point.Y;
+            return x * x + y * y;
+        }
+        public int EdgeLenSquared(Point p1, Point p2)
+        {
+            int x = p1.X - p2.X;
+            int y = p1.Y - p2.Y;
+            return x * x + y * y;
+        }
+        public int EdgeLenSquared((int X, int Y) p1, (int X, int Y) p2)
+        {
+            int x = p1.X - p2.X;
+            int y = p1.Y - p2.Y;
+            return x * x + y * y;
+        }
+        public int DistanceFromEdgeSquared(Point p1, Point p2, Point p)
+        {
+            int A = p.X - p1.X;
+            int B = p.Y - p1.Y;
+            int C = p2.X - p1.X;
+            int D = p2.Y - p1.Y;
 
-        public Vertex selectedVertex = null;
-        public bool isPressedLMB = false;
+            float dot = A * C + B * D;
+            float len_sq = C * C + D * D;
+            float param = dot / len_sq;
+
+            //if (param <= 0 || param >= 1) return int.MaxValue;
+
+            float xx = p1.X + param * C;
+            float yy = p1.Y + param * D;
+            int dx = p.X -(int)xx, dy = p.Y - (int)yy;
+            return dx * dx + dy * dy;
+        }
+        public int DistanceFromEdgeSquared((int x, int y) p1, (int x, int y) p2, (int x, int y) p)
+        {
+            int A = p.x - p1.x;
+            int B = p.y - p1.y;
+            int C = p2.x - p1.x;
+            int D = p2.y - p1.y;
+
+            int dot = A * C + B * D;
+            int len_sq = C * C + D * D;
+            float param = dot / len_sq;
+            
+            if (param <= 0 || param >= 1) return int.MaxValue;
+
+            int xx = p1.x + (int)(param * C);
+            int yy = p1.y + (int)(param * D);
+            int dx = p.x - xx, dy = p.y - yy;
+            return dx * dx + dy * dy;
+        }
+        public int DistanceFromVertexSquared(Point p, Point v)
+        {
+            int dx = p.X - v.X;
+            int dy = p.Y - v.Y;
+            return dx * dx + dy * dy;
+        }
+        public int DistanceFromVertexSquared((int x, int y) p, (int x, int y) v)
+        {
+            int dx = p.x - v.x;
+            int dy = p.y - v.y;
+            return dx * dx + dy * dy;
+        }
 
         public CGP1()
         {
             InitializeComponent();
             rec = new Rectangle(0, 0, radius * 2, radius * 2);
-            penVertex = new Pen(brushVertex);
-            penEdge = new Pen(brushEdge, edgeThickness);
-            penEdgeHighlight = new Pen(brushEdgeHighlight, edgeThickness);
+            pensEdge = new Pen[brushesVertex.Length];
+            for(int i = 0; i < brushesVertex.Length; i++) pensEdge[i] = new Pen(brushesVertex[i], edgeThickness);
 
             polygons = new List<Polygon>();
             drawArea = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
@@ -85,6 +157,7 @@ namespace PRO1
             Graphics g = Graphics.FromImage(drawArea);
             g.Clear(Color.White);
             g.Dispose();
+            positionRelative = new (int x, int y)[2];
 
             state = AppState.ready;
         }
@@ -116,6 +189,7 @@ namespace PRO1
 
         private void canvas_MouseDown(object sender, MouseEventArgs e)
         {
+            int dx, dy;
             if (e.Button == MouseButtons.Right)
             {
                 switch (state)
@@ -148,80 +222,117 @@ namespace PRO1
                 switch (state)
                 {
                     case AppState.newPolygonBegin:
-                        tempPolygon = new Polygon();
-                        tempPolygon.vertices = new List<Vertex>();
-                        tempPolygon.vertices.Add(new Vertex(position, brushVertexHighlight));
-                        //DrawVertex(v);
-                        canvas.Invalidate();
-                        state = AppState.newPolygonDrawing;
-                        break;
-                    case AppState.newPolygonDrawing:
-                        int dx = position.X - tempPolygon.vertices[0].point.X;
-                        int dy = position.Y - tempPolygon.vertices[0].point.Y;
-
-                        // If most recent click is within the first vertex of the polygon, finish drawing polygon
-                        if (dx * dx + dy * dy < 2 * radius * radius)
                         {
-                            if (tempPolygon.vertices.Count > 2)
-                            {
-                                tempPolygon.SetVertexBrush(brushVertex);
-                                polygons.Add(tempPolygon);                                
-                                SetState_Ready();
-                            }
+                            tempPolygon = new Polygon();
+                            tempPolygon.vertices = new List<Vertex>();
+                            tempPolygon.vertices.Add(new Vertex(position, brushesColor.highlight));
+                            //DrawVertex(v);
+                            canvas.Invalidate();
+                            state = AppState.newPolygonDrawing;
+                            break;
                         }
-                        else
+                    case AppState.newPolygonDrawing:
                         {
-                            foreach (Polygon p in polygons)
+                            dx = position.X - tempPolygon.vertices[0].point.X;
+                            dy = position.Y - tempPolygon.vertices[0].point.Y;
+
+                            // If most recent click is within the first vertex of the polygon, finish drawing polygon
+                            if (dx * dx + dy * dy < 2 * radius * radius)
                             {
-                                foreach (Vertex v in p.vertices)
+                                if (tempPolygon.vertices.Count > 2)
                                 {
-                                    dx = position.X - v.point.X;
-                                    dy = position.Y - v.point.Y;
-                                    if (dx * dx + dy * dy < 4 * radius * radius) return;
+                                    tempPolygon.SetVertexBrush(brushesColor.normal);
+                                    polygons.Add(tempPolygon);
+                                    SetState_Ready();
                                 }
                             }
-                            foreach (Vertex v in tempPolygon.vertices)
+                            else
                             {
-                                dx = position.X - v.point.X;
-                                dy = position.Y - v.point.Y;
-                                if (dx * dx + dy * dy < 4 * radius * radius) return;
-                            }
+                                foreach (Polygon p in polygons)
+                                {
+                                    foreach (Vertex v in p.vertices)
+                                    {
+                                        if (DistanceFromVertexSquared(position, v.point) < toleranceRadius * radius * radius) return;
+                                    }
+                                }
+                                foreach (Vertex v in tempPolygon.vertices)
+                                {
+                                    if (DistanceFromVertexSquared(position, v.point) < toleranceRadius * radius * radius) return;
+                                }
 
-                            //Vertex newVertex = new Vertex(position);
-                            tempPolygon.vertices.Add(new Vertex(position, brushVertexHighlight));
-                            //DrawVertex(newVertex);
-                            //DrawEdge(tempPolygon.vertices[tempPolygon.vertices.Count - 2], newVertex);
+                                tempPolygon.vertices.Add(new Vertex(position, brushesColor.highlight));
+                            }
+                            canvas.Invalidate();
+                            break;
                         }
-                        canvas.Invalidate();
-                        break;
                     case AppState.ready:
                         selectedVertex = null;
+                        selectedEdge = null;
+                        int dist = int.MaxValue, distShort = int.MaxValue;
                         foreach (Polygon p in polygons)
                         {
-                            foreach (Vertex v in p.vertices)
+                            for(int i = 0; i < p.vertices.Count; i++)
                             {
-                                dx = position.X - v.point.X;
-                                dy = position.Y - v.point.Y;
-                                if (dx * dx + dy * dy < 2 * radius * radius)
+
+                                if (DistanceFromVertexSquared(position, p.vertices[i].point) < toleranceRadius * radius * radius)
                                 {
-                                    selectedVertex = v;
+                                    selectedVertex = p.vertices[i];
+                                    break;
+                                }
+
+                                // If you tried to pick the second vertex in a polygon, this if would catch that and think you picked the edge instead
+                                // it caused problems with picking edges over single vertices sometimes, this is why it had to be split into another for loop
+                                //dist = DistanceFromEdgeSquared(p.vertices[i].point, p.vertices[(i + 1) % p.vertices.Count].point, position);
+                                //distShort = Math.Min(dist, distShort);
+                                //if (dist < toleranceSquared)
+                                //{
+                                //    selectedEdge = (p.vertices[i], p.vertices[(i + 1) % p.vertices.Count]);
+                                //    break;
+                                //}
+                            }
+
+                            for(int i = 0;  i < p.vertices.Count; i++)
+                            {
+                                dist = DistanceFromEdgeSquared(p.vertices[i].point, p.vertices[(i + 1) % p.vertices.Count].point, position);
+                                distShort = Math.Min(dist, distShort);
+                                if (dist < toleranceSquared)
+                                {
+                                    selectedEdge = (p.vertices[i], p.vertices[(i + 1) % p.vertices.Count]);
                                     break;
                                 }
                             }
-                            if (selectedVertex != null) break;
+
+                            if (selectedVertex != null || selectedEdge != null) break;
                         }
 
-                        if (selectedVertex == null)
+                        buttonEdge.Text = $"{distShort}";
+
+                        if (selectedVertex == null && selectedEdge == null)
                         {
-                            buttonDebug.Text = "No vertex selected";
+                            buttonDebug.Text = "No vertex or edge selected";
                             return;
                         }
 
-                        buttonDebug.Text = "Vertex selected";
 
-                        selectedVertex.brush = brushVertexSelected;
+                        if (selectedVertex != null)
+                        {
+                            buttonDebug.Text = "Vertex selected";
+                            selectedVertex.brush = brushesColor.highlight;
+                            //positionRelative[0] = selectedVertex.point;
+                        }
+                        else
+                            if(selectedEdge != null)
+                        {
+                            buttonDebug.Text = "Edge selected";
+                            selectedEdge.Value.v1.brush = brushesColor.highlight;
+                            selectedEdge.Value.v2.brush = brushesColor.highlight;
+                            positionRelative[0] = (position.X - selectedEdge.Value.v1.point.X, position.Y - selectedEdge.Value.v1.point.Y);
+                            positionRelative[1] = (position.X - selectedEdge.Value.v2.point.X, position.Y - selectedEdge.Value.v2.point.Y);
+                        }                       
+
                         isPressedLMB = true;
                         buttonLMB.Text = "LMB true";
+                        //this.Capture = true;
                         break;
                     default:
                         break;
@@ -235,25 +346,47 @@ namespace PRO1
             if (e.Button == MouseButtons.Left)
             {
                 if (isPressedLMB == true)
-                {
-                    buttonDebug.Text = "Vertex unselected";
-                    isPressedLMB = false;
-                    selectedVertex.brush = brushVertex;
-                    selectedVertex = null;
-                    canvas.Invalidate();
-                    buttonLMB.Text = "LMB false";
-                }
+                    if(selectedVertex != null)
+                    {
+                        //this.Capture = false;
+                        buttonDebug.Text = "Vertex released";
+                        isPressedLMB = false;
+                        selectedVertex.brush = brushesColor.normal;
+                        selectedVertex = null;
+                        canvas.Invalidate();
+                        buttonLMB.Text = "LMB false";
+                    }
+                else if(selectedEdge != null)
+                    {
+                        buttonDebug.Text = "Edge released";
+                        isPressedLMB = false;
+                        selectedEdge.Value.v1.brush = brushesColor.normal;
+                        selectedEdge.Value.v2.brush = brushesColor.normal;
+                        selectedEdge = null;
+                        canvas.Invalidate();
+                        buttonLMB.Text = "LMB false";
+                    }
             }
         }
         private void canvas_MouseMove(object sender, MouseEventArgs e)
         {
-            while (isPressedLMB == true && canvas.Focused)
+            if (e.Button == MouseButtons.Left && isPressedLMB == true)
             {
-                buttonDebug.Text = "Vertex shmovin'";
-                canvas.Invalidate();
-                selectedVertex.ChangePlacement(e.Location);
-                canvas.Invalidate();
+                if(selectedVertex != null)
+                {
+                    buttonDebug.Text = "Vertex shmovin'";
+                    selectedVertex.ChangePlacement(e.X, e.Y);
+                    canvas.Invalidate();
+                }
+                else if(selectedEdge != null)
+                {
+                    buttonDebug.Text = "Edge shmovin'";
+                    selectedEdge.Value.v1.ChangePlacement(e.X - positionRelative[0].x, e.Y - positionRelative[0].y);
+                    selectedEdge.Value.v2.ChangePlacement(e.X - positionRelative[1].x, e.Y - positionRelative[1].y);
+                    canvas.Invalidate();
+                }
             }
+
         }
 
         private void buttonNewPolygon_MouseClick(object sender, MouseEventArgs e)
@@ -278,51 +411,51 @@ namespace PRO1
             }
         }
 
-        public void DrawVertex(Vertex v)
-        {
-            if (v == null) return;
-            rec.Location = new System.Drawing.Point(v.point.X - radius, v.point.Y - radius);
-            graph.FillEllipse(brushVertex, rec);
-        }
+        //public void DrawVertex(Vertex v)
+        //{
+        //    if (v == null) return;
+        //    rec.Location = new System.Drawing.Point(v.point.X - radius, v.point.Y - radius);
+        //    graph.FillEllipse(brushVertex, rec);
+        //}
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             canvas.Image.Dispose();
         }
 
-        public void DrawEdge(Vertex vp, Vertex vk)
-        {
-            if (vp == null || vk == null) return;
-            graph.DrawLine(penEdge, vp.point, vk.point);
-        }
-        public void DrawPolygon(Polygon p)
-        {
-            if (p == null) return;
-            foreach (Vertex v in p.vertices)
-            {
-                DrawVertex(v);
-            }
+        //public void DrawEdge(Vertex vp, Vertex vk)
+        //{
+        //    if (vp == null || vk == null) return;
+        //    graph.DrawLine(penEdge, vp.point, vk.point);
+        //}
+        //public void DrawPolygon(Polygon p)
+        //{
+        //    if (p == null) return;
+        //    foreach (Vertex v in p.vertices)
+        //    {
+        //        DrawVertex(v);
+        //    }
 
-            for (int i = 0; i < p.vertices.Count; i++)
-            {
-                DrawEdge(p.vertices[i], p.vertices[(i + 1) % p.vertices.Count]);
-            }
-        }
-        public void DrawUnfinishedPolygon(Polygon p)
-        {
-            if (p == null) return;
+        //    for (int i = 0; i < p.vertices.Count; i++)
+        //    {
+        //        DrawEdge(p.vertices[i], p.vertices[(i + 1) % p.vertices.Count]);
+        //    }
+        //}
+        //public void DrawUnfinishedPolygon(Polygon p)
+        //{
+        //    if (p == null) return;
 
-            foreach (Vertex v in tempPolygon.vertices)
-            {
-                DrawVertex(v);
-            }
+        //    foreach (Vertex v in tempPolygon.vertices)
+        //    {
+        //        DrawVertex(v);
+        //    }
 
-            if (tempPolygon.vertices.Count > 1)
-                for (int i = 0; i < tempPolygon.vertices.Count - 1; i++)
-                {
-                    DrawEdge(p.vertices[i], p.vertices[i + 1]);
-                }
-        }
+        //    if (tempPolygon.vertices.Count > 1)
+        //        for (int i = 0; i < tempPolygon.vertices.Count - 1; i++)
+        //        {
+        //            DrawEdge(p.vertices[i], p.vertices[i + 1]);
+        //        }
+        //}
 
         private void canvas_Paint(object sender, PaintEventArgs e)
         {
@@ -366,12 +499,12 @@ namespace PRO1
                 if (tempPolygon.vertices.Count > 1)
                     for (int i = 0; i < tempPolygon.vertices.Count - 1; i++)
                     {
-                        e.Graphics.DrawLine(penEdgeHighlight, tempPolygon.vertices[i].point, tempPolygon.vertices[i + 1].point);
+                        e.Graphics.DrawLine(pensEdge[(int)tempPolygon.vertices[i].brush], tempPolygon.vertices[i].point, tempPolygon.vertices[i + 1].point);
                     }
 
                 foreach (Vertex v in tempPolygon.vertices)
                 {
-                    e.Graphics.FillEllipse(v.brush, v.point.X - radius, v.point.Y - radius, 2 * radius, 2 * radius);
+                    e.Graphics.FillEllipse(brushesVertex[(int)v.brush], v.point.X - radius, v.point.Y - radius, 2 * radius, 2 * radius);
                 }
             }
 
@@ -380,12 +513,12 @@ namespace PRO1
                 {
                     for (int i = 0; i < p.vertices.Count; i++)
                     {
-                        e.Graphics.DrawLine(penEdge, p.vertices[i].point, p.vertices[(i + 1) % p.vertices.Count].point);
+                        e.Graphics.DrawLine((p.vertices[i].brush == p.vertices[(i + 1) % p.vertices.Count].brush) ? pensEdge[(int)p.vertices[i].brush] : pensEdge[(int)brushesColor.normal], p.vertices[i].point, p.vertices[(i + 1) % p.vertices.Count].point);
                     }
 
                     foreach (Vertex v in p.vertices)
                     {
-                        e.Graphics.FillEllipse(v.brush, v.point.X - radius, v.point.Y - radius, 2 * radius, 2 * radius);
+                        e.Graphics.FillEllipse(brushesVertex[(int)v.brush], v.point.X - radius, v.point.Y - radius, 2 * radius, 2 * radius);
                     }
                 }
         }
