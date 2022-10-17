@@ -12,18 +12,15 @@ namespace PRO1
 {
     //Co działa:
     //    Dodawanie nowego wielokąta
-    //    Przesuwanie wierzchołka
-    //    Dodawanie wierzchołka w środku wybranej krawędzi
-    //    Przesuwanie całej krawędzi
+    //    Przesuwanie wierzchołka (LPM na wierzchołku)
+    //    Dodawanie wierzchołka w środku wybranej krawędzi (PPM na krawędzi)
+    //    Przesuwanie krawędzi (LPM na krawędzi)
+    //    Przesuwanie całego wielokąta (Space + LPM na dowolną część wielokąta)
+    //    Usuwanie wielokąta (Space + PPM na dowolną część wielokąta)
     //Nie działa:
-    //    Przesuwanie krawędzi po dodaniu wierzchołka - po dodaniu wierzchołka klikając w drugą połowę krawędzi
-    //    (nowy wierzchołek pojawia się przed kursorem wg kolejności wierzchołków w liście danego wielokąta)
-    //    złapanie krawędzi w celu jej przesunięcia przesuwa krawędź poprzednią
-    //    Przesuwanie całego wielokąta
     //Nie zaimplementowane:
     //    Algorytm Bresenhama
     //    Przełączanie się między algorytmami
-    //    Usuwanie wielokątów (może używając spacji?)
     //    Ograniczenia
     //    Predefiniowana scena
     //Dodatkowo dodane:
@@ -40,26 +37,6 @@ namespace PRO1
         public Pen[] pensEdge;
         public Graphics graph;
         public Bitmap drawArea;
-
-        public AppState state;
-        public Polygon tempPolygon;
-        public List<Polygon> polygons;
-
-        public Vertex selectedVertex = null;
-        public (Vertex v1, Vertex v2)? selectedEdge = null;
-        public Polygon selectedPolygon = null;
-        public bool isPressedLMB = false;
-        public (int x, int y)[] positionRelative; // array used when moving edges - holds relative positions of 2 vertices based on the point we're holding the edge by
-
-        public Timer clickTimer;
-        public TimeSpan doubleClickMaxTime;
-        public DateTime lastClick;
-        public bool inDoubleClick;
-        public Point originalMousePosition;
-        public int vertexIndex;
-
-        public bool isPressedSpace = false;
-
         public enum AppState
         {
             ready,
@@ -69,6 +46,24 @@ namespace PRO1
             moveEdge,
             moveVertex
         }
+        public AppState state;
+        public Polygon tempPolygon;
+        public List<Polygon> polygons;
+
+        public Vertex selectedVertex = null;
+        public (Vertex v1, Vertex v2)? selectedEdge = null;
+        public Polygon selectedPolygon = null;
+        public bool isPressedLMB = false;
+
+        //public Timer clickTimer;
+        //public TimeSpan doubleClickMaxTime;
+        //public DateTime lastClick;
+        //public bool inDoubleClick;
+        public Point originalMousePosition;
+        public int vertexIndex;
+
+        public bool isPressedSpace = false;
+
         public class Vertex
         {
             public Point point;
@@ -135,7 +130,7 @@ namespace PRO1
             float len_sq = C * C + D * D;
             float param = dot / len_sq;
 
-            //if (param <= 0 || param >= 1) return int.MaxValue;
+            if (param <= 0 || param >= 1) return int.MaxValue;
 
             float xx = p1.X + param * C;
             float yy = p1.Y + param * D;
@@ -186,7 +181,6 @@ namespace PRO1
             Graphics g = Graphics.FromImage(drawArea);
             g.Clear(Color.White);
             g.Dispose();
-            positionRelative = new (int x, int y)[2];
 
             state = AppState.ready;
         }
@@ -281,6 +275,13 @@ namespace PRO1
                         break;
                     case AppState.ready:
                         SearchThroughPolygonsOnClick(position);
+                        if(isPressedSpace == true && selectedPolygon != null)
+                        {
+                            polygons.Remove(selectedPolygon);
+                            canvas.Invalidate();
+                            return;
+                        }
+
                         if (selectedVertex != null && selectedPolygon.vertices.Count > 3)
                         {
                             selectedPolygon.vertices.Remove(selectedVertex);
@@ -292,6 +293,12 @@ namespace PRO1
                             selectedPolygon.vertices.Insert(vertexIndex + 1, new Vertex(new Point(x, y), brushesColor.normal));
                         }
                         canvas.Invalidate();
+                        break;
+                    case AppState.movePolygon:
+                        //SearchThroughPolygonsOnClick(position);
+                        //if (selectedPolygon == null) break;
+                        //polygons.Remove(selectedPolygon);
+                        //canvas.Invalidate();
                         break;
                     default:
                         break;
@@ -350,15 +357,15 @@ namespace PRO1
                             break;
                         }
                     case AppState.movePolygon:
-                        SearchThroughPolygonsOnClick(position);
-                        if (selectedPolygon == null)
-                        {
-                            buttonDebug.Text = "No vertex or edge selected";
-                            return;
-                        }
-                        originalMousePosition = position;
-                        isPressedLMB = true;
-                        buttonLMB.Text = "LMB true";
+                        //SearchThroughPolygonsOnClick(position);
+                        //if (selectedPolygon == null)
+                        //{
+                        //    buttonDebug.Text = "No vertex or edge selected";
+                        //    return;
+                        //}
+                        //originalMousePosition = position;
+                        //isPressedLMB = true;
+                        //buttonLMB.Text = "LMB true";
                         break;
                     case AppState.ready:
                         SearchThroughPolygonsOnClick(position);
@@ -371,8 +378,9 @@ namespace PRO1
 
                         isPressedLMB = true;
                         buttonLMB.Text = "LMB true";
+                        originalMousePosition = position;
 
-                        if(isPressedSpace == true)
+                        if (isPressedSpace == true)
                         {
                             selectedPolygon.SetVertexBrush(brushesColor.highlight);
                             state = AppState.movePolygon;
@@ -380,7 +388,6 @@ namespace PRO1
                         {
                             buttonDebug.Text = "Vertex selected";
                             selectedVertex.brush = brushesColor.highlight;
-                            //positionRelative[0] = selectedVertex.point;
                         }
                         else
                             if (selectedEdge != null)
@@ -388,8 +395,6 @@ namespace PRO1
                             buttonDebug.Text = "Edge selected";
                             selectedEdge.Value.v1.brush = brushesColor.highlight;
                             selectedEdge.Value.v2.brush = brushesColor.highlight;
-                            positionRelative[0] = (position.X - selectedEdge.Value.v1.point.X, position.Y - selectedEdge.Value.v1.point.Y);
-                            positionRelative[1] = (position.X - selectedEdge.Value.v2.point.X, position.Y - selectedEdge.Value.v2.point.Y);
                         }
                         break;
                     default:
@@ -397,6 +402,35 @@ namespace PRO1
                 }
 
                 return;
+            }
+        }
+        private void canvas_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left && isPressedLMB == true)
+            {
+                int dx = e.X - originalMousePosition.X;
+                int dy = e.Y - originalMousePosition.Y;
+                if (state == AppState.movePolygon)
+                {
+                    foreach (Vertex v in selectedPolygon.vertices)
+                    {
+                        v.Move(dx, dy);
+                    }
+                }
+                else if (selectedVertex != null)
+                {
+                    buttonDebug.Text = "Vertex shmovin'";
+                    selectedVertex.Move(dx, dy);
+                }
+                else if (selectedEdge != null)
+                {
+                    buttonDebug.Text = "Edge shmovin'";
+                    selectedEdge.Value.v1.Move(dx, dy);
+                    selectedEdge.Value.v2.Move(dx, dy);
+                }
+
+                canvas.Invalidate();
+                originalMousePosition = e.Location;
             }
         }
         private void canvas_MouseUp(object sender, MouseEventArgs e)
@@ -411,6 +445,7 @@ namespace PRO1
                         buttonDebug.Text = "Polygon released";
                         selectedPolygon.SetVertexBrush(brushesColor.normal);
                         selectedPolygon = null;
+                        state = AppState.ready;
                         canvas.Invalidate();
                         buttonLMB.Text = "LMB false";
                     }
@@ -435,36 +470,6 @@ namespace PRO1
 
             }
         }
-        private void canvas_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left && isPressedLMB == true)
-            {
-                int dx = e.X - originalMousePosition.X;
-                int dy = e.Y - originalMousePosition.Y;
-                if(state == AppState.movePolygon)
-                {
-                    foreach(Vertex v in selectedPolygon.vertices)
-                    {
-                        v.Move(dx, dy);
-                    }
-                    canvas.Invalidate();
-                }
-                else if(selectedVertex != null)
-                {
-                    buttonDebug.Text = "Vertex shmovin'";
-                    selectedVertex.ChangePlacement(e.X, e.Y);
-                    canvas.Invalidate();
-                }
-                else if(selectedEdge != null)
-                {
-                    buttonDebug.Text = "Edge shmovin'";
-                    selectedEdge.Value.v1.ChangePlacement(e.X - positionRelative[0].x, e.Y - positionRelative[0].y);
-                    selectedEdge.Value.v2.ChangePlacement(e.X - positionRelative[1].x, e.Y - positionRelative[1].y);
-                    canvas.Invalidate();
-                }
-            }
-
-        }
 
         private void buttonNewPolygon_MouseClick(object sender, MouseEventArgs e)
         {
@@ -481,12 +486,23 @@ namespace PRO1
 
         private void CGP1_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Space) isPressedSpace = true;
+            if (e.KeyCode == Keys.Space)
+            {
+                //state = AppState.movePolygon;
+                isPressedSpace = true;
+                buttonSpace.Text = "Space pressed";
+            }
         }
 
         private void CGP1_KeyUp(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Space) isPressedSpace = false;
+            //buttonSpace.Text = $"{e.KeyCode}";
+            if (e.KeyCode == Keys.Space)
+            {
+                //state = AppState.ready;
+                isPressedSpace = false;
+                buttonSpace.Text = "Space depressed";
+            }
         }
 
         private void buttonClearSpace_MouseClick(object sender, MouseEventArgs e)

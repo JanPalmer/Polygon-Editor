@@ -35,10 +35,11 @@ namespace PRO1
             this.buttonClearSpace = new System.Windows.Forms.Button();
             this.buttonDebug = new System.Windows.Forms.Button();
             this.buttonLMB = new System.Windows.Forms.Button();
+            this.buttonEdge = new System.Windows.Forms.Button();
             this.groupBoxAlgorithm = new System.Windows.Forms.GroupBox();
             this.radioButton2 = new System.Windows.Forms.RadioButton();
             this.radioButton1 = new System.Windows.Forms.RadioButton();
-            this.buttonEdge = new System.Windows.Forms.Button();
+            this.buttonSpace = new System.Windows.Forms.Button();
             this.canvas = new System.Windows.Forms.PictureBox();
             this.tableLayoutPanel1.SuspendLayout();
             this.panelControl.SuspendLayout();
@@ -72,17 +73,19 @@ namespace PRO1
             this.panelControl.Controls.Add(this.buttonClearSpace, 0, 1);
             this.panelControl.Controls.Add(this.buttonDebug, 0, 2);
             this.panelControl.Controls.Add(this.buttonLMB, 0, 3);
-            this.panelControl.Controls.Add(this.groupBoxAlgorithm, 0, 5);
             this.panelControl.Controls.Add(this.buttonEdge, 0, 4);
+            this.panelControl.Controls.Add(this.groupBoxAlgorithm, 0, 6);
+            this.panelControl.Controls.Add(this.buttonSpace, 0, 5);
             this.panelControl.Location = new System.Drawing.Point(633, 3);
             this.panelControl.Name = "panelControl";
-            this.panelControl.RowCount = 6;
+            this.panelControl.RowCount = 7;
             this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.90909F));
             this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 49.09091F));
             this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 66F));
             this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 67F));
             this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 118F));
-            this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 143F));
+            this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 58F));
+            this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 105F));
             this.panelControl.Size = new System.Drawing.Size(148, 505);
             this.panelControl.TabIndex = 0;
             // 
@@ -93,7 +96,7 @@ namespace PRO1
             | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonNewPolygon.Location = new System.Drawing.Point(3, 3);
             this.buttonNewPolygon.Name = "buttonNewPolygon";
-            this.buttonNewPolygon.Size = new System.Drawing.Size(142, 50);
+            this.buttonNewPolygon.Size = new System.Drawing.Size(142, 40);
             this.buttonNewPolygon.TabIndex = 1;
             this.buttonNewPolygon.Text = "New Polygon";
             this.buttonNewPolygon.UseVisualStyleBackColor = true;
@@ -103,9 +106,9 @@ namespace PRO1
             // 
             this.buttonClearSpace.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonClearSpace.Location = new System.Drawing.Point(3, 59);
+            this.buttonClearSpace.Location = new System.Drawing.Point(3, 49);
             this.buttonClearSpace.Name = "buttonClearSpace";
-            this.buttonClearSpace.Size = new System.Drawing.Size(142, 48);
+            this.buttonClearSpace.Size = new System.Drawing.Size(142, 38);
             this.buttonClearSpace.TabIndex = 2;
             this.buttonClearSpace.Text = "Clear Drawing Space";
             this.buttonClearSpace.UseVisualStyleBackColor = true;
@@ -116,7 +119,7 @@ namespace PRO1
             this.buttonDebug.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonDebug.Location = new System.Drawing.Point(3, 113);
+            this.buttonDebug.Location = new System.Drawing.Point(3, 93);
             this.buttonDebug.Name = "buttonDebug";
             this.buttonDebug.Size = new System.Drawing.Size(142, 60);
             this.buttonDebug.TabIndex = 3;
@@ -128,12 +131,24 @@ namespace PRO1
             this.buttonLMB.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonLMB.Location = new System.Drawing.Point(3, 179);
+            this.buttonLMB.Location = new System.Drawing.Point(3, 159);
             this.buttonLMB.Name = "buttonLMB";
             this.buttonLMB.Size = new System.Drawing.Size(142, 61);
             this.buttonLMB.TabIndex = 4;
             this.buttonLMB.Text = "button1";
             this.buttonLMB.UseVisualStyleBackColor = true;
+            // 
+            // buttonEdge
+            // 
+            this.buttonEdge.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonEdge.Location = new System.Drawing.Point(3, 226);
+            this.buttonEdge.Name = "buttonEdge";
+            this.buttonEdge.Size = new System.Drawing.Size(142, 112);
+            this.buttonEdge.TabIndex = 5;
+            this.buttonEdge.Text = "button1";
+            this.buttonEdge.UseVisualStyleBackColor = true;
             // 
             // groupBoxAlgorithm
             // 
@@ -142,9 +157,9 @@ namespace PRO1
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBoxAlgorithm.Controls.Add(this.radioButton2);
             this.groupBoxAlgorithm.Controls.Add(this.radioButton1);
-            this.groupBoxAlgorithm.Location = new System.Drawing.Point(3, 364);
+            this.groupBoxAlgorithm.Location = new System.Drawing.Point(3, 402);
             this.groupBoxAlgorithm.Name = "groupBoxAlgorithm";
-            this.groupBoxAlgorithm.Size = new System.Drawing.Size(142, 138);
+            this.groupBoxAlgorithm.Size = new System.Drawing.Size(142, 100);
             this.groupBoxAlgorithm.TabIndex = 0;
             this.groupBoxAlgorithm.TabStop = false;
             this.groupBoxAlgorithm.Text = "Current Edge Drawing Algorithm";
@@ -171,17 +186,14 @@ namespace PRO1
             this.radioButton1.Text = "radioButton1";
             this.radioButton1.UseVisualStyleBackColor = true;
             // 
-            // buttonEdge
+            // buttonSpace
             // 
-            this.buttonEdge.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonEdge.Location = new System.Drawing.Point(3, 246);
-            this.buttonEdge.Name = "buttonEdge";
-            this.buttonEdge.Size = new System.Drawing.Size(142, 112);
-            this.buttonEdge.TabIndex = 5;
-            this.buttonEdge.Text = "button1";
-            this.buttonEdge.UseVisualStyleBackColor = true;
+            this.buttonSpace.Location = new System.Drawing.Point(3, 344);
+            this.buttonSpace.Name = "buttonSpace";
+            this.buttonSpace.Size = new System.Drawing.Size(142, 52);
+            this.buttonSpace.TabIndex = 6;
+            this.buttonSpace.Text = "button1";
+            this.buttonSpace.UseVisualStyleBackColor = true;
             // 
             // canvas
             // 
@@ -203,6 +215,7 @@ namespace PRO1
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 511);
             this.Controls.Add(this.tableLayoutPanel1);
+            this.KeyPreview = true;
             this.MinimumSize = new System.Drawing.Size(650, 400);
             this.Name = "CGP1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -232,6 +245,7 @@ namespace PRO1
         private System.Windows.Forms.Button buttonDebug;
         private System.Windows.Forms.Button buttonLMB;
         private System.Windows.Forms.Button buttonEdge;
+        private System.Windows.Forms.Button buttonSpace;
     }
 }
 
