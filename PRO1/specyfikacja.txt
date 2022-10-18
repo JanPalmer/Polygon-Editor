@@ -13,3 +13,8 @@ dodanie relacji zmienia kolor krawędzi:
 	krawędzie prostopadłe - zmienia kolor na bursztynowy oraz wyświetla obok numer relacji
 	obie krawędzie w relacji mają ten sam numer
 
+Jeżeli wierzchołek należy do krawędzi, na którą nałożona jest relacja,
+to relacja zmienia działanie funkcji Move wierzchołka.
+Dla FixedLength, jeżeli wierzchołek zostanie poruszony, to musi wylądować w takiej samej odległości
+od drugiego wierzchołka należącego do relacji, co wcześniej.
+

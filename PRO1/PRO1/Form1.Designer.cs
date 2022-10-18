@@ -37,8 +37,8 @@ namespace PRO1
             this.buttonLMB = new System.Windows.Forms.Button();
             this.buttonEdge = new System.Windows.Forms.Button();
             this.groupBoxAlgorithm = new System.Windows.Forms.GroupBox();
-            this.radioButton2 = new System.Windows.Forms.RadioButton();
-            this.radioButton1 = new System.Windows.Forms.RadioButton();
+            this.radioButtonBuildIn = new System.Windows.Forms.RadioButton();
+            this.radioButtonBresenham = new System.Windows.Forms.RadioButton();
             this.buttonSpace = new System.Windows.Forms.Button();
             this.canvas = new System.Windows.Forms.PictureBox();
             this.tableLayoutPanel1.SuspendLayout();
@@ -155,8 +155,8 @@ namespace PRO1
             this.groupBoxAlgorithm.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBoxAlgorithm.Controls.Add(this.radioButton2);
-            this.groupBoxAlgorithm.Controls.Add(this.radioButton1);
+            this.groupBoxAlgorithm.Controls.Add(this.radioButtonBuildIn);
+            this.groupBoxAlgorithm.Controls.Add(this.radioButtonBresenham);
             this.groupBoxAlgorithm.Location = new System.Drawing.Point(3, 402);
             this.groupBoxAlgorithm.Name = "groupBoxAlgorithm";
             this.groupBoxAlgorithm.Size = new System.Drawing.Size(142, 100);
@@ -164,27 +164,28 @@ namespace PRO1
             this.groupBoxAlgorithm.TabStop = false;
             this.groupBoxAlgorithm.Text = "Current Edge Drawing Algorithm";
             // 
-            // radioButton2
+            // radioButtonBuildIn
             // 
-            this.radioButton2.AutoSize = true;
-            this.radioButton2.Location = new System.Drawing.Point(6, 75);
-            this.radioButton2.Name = "radioButton2";
-            this.radioButton2.Size = new System.Drawing.Size(94, 19);
-            this.radioButton2.TabIndex = 1;
-            this.radioButton2.TabStop = true;
-            this.radioButton2.Text = "radioButton2";
-            this.radioButton2.UseVisualStyleBackColor = true;
+            this.radioButtonBuildIn.AutoSize = true;
+            this.radioButtonBuildIn.Checked = true;
+            this.radioButtonBuildIn.Location = new System.Drawing.Point(6, 75);
+            this.radioButtonBuildIn.Name = "radioButtonBuildIn";
+            this.radioButtonBuildIn.Size = new System.Drawing.Size(67, 19);
+            this.radioButtonBuildIn.TabIndex = 1;
+            this.radioButtonBuildIn.TabStop = true;
+            this.radioButtonBuildIn.Text = "Build-in";
+            this.radioButtonBuildIn.UseVisualStyleBackColor = true;
             // 
-            // radioButton1
+            // radioButtonBresenham
             // 
-            this.radioButton1.AutoSize = true;
-            this.radioButton1.Location = new System.Drawing.Point(6, 39);
-            this.radioButton1.Name = "radioButton1";
-            this.radioButton1.Size = new System.Drawing.Size(94, 19);
-            this.radioButton1.TabIndex = 0;
-            this.radioButton1.TabStop = true;
-            this.radioButton1.Text = "radioButton1";
-            this.radioButton1.UseVisualStyleBackColor = true;
+            this.radioButtonBresenham.AutoSize = true;
+            this.radioButtonBresenham.Location = new System.Drawing.Point(6, 39);
+            this.radioButtonBresenham.Name = "radioButtonBresenham";
+            this.radioButtonBresenham.Size = new System.Drawing.Size(84, 19);
+            this.radioButtonBresenham.TabIndex = 0;
+            this.radioButtonBresenham.Text = "Bresenham";
+            this.radioButtonBresenham.UseVisualStyleBackColor = true;
+            this.radioButtonBresenham.CheckedChanged += new System.EventHandler(this.radioButtonBresenham_CheckedChanged);
             // 
             // buttonSpace
             // 
@@ -237,8 +238,8 @@ namespace PRO1
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.TableLayoutPanel panelControl;
         private System.Windows.Forms.GroupBox groupBoxAlgorithm;
-        private System.Windows.Forms.RadioButton radioButton2;
-        private System.Windows.Forms.RadioButton radioButton1;
+        private System.Windows.Forms.RadioButton radioButtonBuildIn;
+        private System.Windows.Forms.RadioButton radioButtonBresenham;
         private System.Windows.Forms.PictureBox canvas;
         private System.Windows.Forms.Button buttonNewPolygon;
         private System.Windows.Forms.Button buttonClearSpace;

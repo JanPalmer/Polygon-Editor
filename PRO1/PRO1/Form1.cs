@@ -55,6 +55,8 @@ namespace PRO1
         public Polygon selectedPolygon = null;
         public bool isPressedLMB = false;
 
+        public bool useBresenham;
+
         //public Timer clickTimer;
         //public TimeSpan doubleClickMaxTime;
         //public DateTime lastClick;
@@ -175,6 +177,7 @@ namespace PRO1
             pensEdge = new Pen[brushesVertex.Length];
             for(int i = 0; i < brushesVertex.Length; i++) pensEdge[i] = new Pen(brushesVertex[i], edgeThickness);
 
+            useBresenham = radioButtonBresenham.Checked;
             polygons = new List<Polygon>();
             drawArea = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
             canvas.Image = drawArea;
@@ -526,6 +529,20 @@ namespace PRO1
             canvas.Image.Dispose();
         }
 
+        private void radioButtonBresenham_CheckedChanged(object sender, EventArgs e)
+        {
+            useBresenham = !useBresenham;
+            if (useBresenham)
+            {
+                buttonDebug.Text = "Using Bresenham";
+            }
+            else
+            {
+                buttonDebug.Text = "Using Build-in";
+            }
+            canvas.Invalidate();
+        }
+
         //public void DrawEdge(Vertex vp, Vertex vk)
         //{
         //    if (vp == null || vk == null) return;
@@ -560,14 +577,70 @@ namespace PRO1
         //        }
         //}
 
+        public void DrawPoint(Graphics g, brushesColor color, Point p)
+        {
+            //if(p.X > 0 && p.Y > 0 && p.X < canvas.Image.Width && p.Y < canvas.Image.Height)
+            g.FillEllipse(brushesVertex[(int)color], p.X, p.Y, edgeThickness, edgeThickness);
+        }
+
+        public void DrawLineBresenham(Graphics g, Point p, Point k, brushesColor color)
+        {
+            buttonEdge.Text = $"Drawing {p.X},{p.Y} to {k.X},{k.Y}";
+            int w = k.X - p.X;
+            int h = k.Y - p.Y;
+            int dx1 = 0, dy1 = 0, dx2 = 0, dy2 = 0;
+            if (w < 0) dx1 = -1; else if (w > 0) dx1 = 1;
+            if (h < 0) dy1 = -1; else if (h > 0) dy1 = 1;
+            if (w < 0) dx2 = -1; else if (w > 0) dx2 = 1;
+
+            int longest = Math.Abs(w);
+            int shortest = Math.Abs(h);
+            Point cursor = new Point(p.X, p.Y);
+
+            if(longest <= shortest)
+            {
+                (longest, shortest) = (shortest, longest);
+                if (h < 0) dy2 = -1; else if (h > 0) dy2 = 1;
+                dx2 = 0;
+            }
+            int numerator = longest >> 1;
+            for(int i = 0; i <= longest; i++)
+            {
+                buttonDebug.Text = $"{i} out of {longest}";
+                DrawPoint(g, color, cursor);
+                numerator += shortest;
+                if(numerator >= longest)
+                {
+                    numerator -= longest;
+                    cursor.X += dx1;
+                    cursor.Y += dy1;
+                }
+                else
+                {
+                    cursor.X += dx2;
+                    cursor.Y += dy2;
+                }
+            }
+        }
+
         private void canvas_Paint(object sender, PaintEventArgs e)
         {
+            brushesColor edgeColor;
+
             if (tempPolygon != null)
             {
                 if (tempPolygon.vertices.Count > 1)
                     for (int i = 0; i < tempPolygon.vertices.Count - 1; i++)
                     {
-                        e.Graphics.DrawLine(pensEdge[(int)tempPolygon.vertices[i].brush], tempPolygon.vertices[i].point, tempPolygon.vertices[i + 1].point);
+                        edgeColor = tempPolygon.vertices[i].brush;
+                        if (useBresenham)
+                        {
+                            DrawLineBresenham(e.Graphics, tempPolygon.vertices[i].point, tempPolygon.vertices[i + 1].point, edgeColor);
+                        }
+                        else
+                        {
+                            e.Graphics.DrawLine(pensEdge[(int)edgeColor], tempPolygon.vertices[i].point, tempPolygon.vertices[i + 1].point);
+                        }
                     }
 
                 foreach (Vertex v in tempPolygon.vertices)
@@ -581,7 +654,17 @@ namespace PRO1
                 {
                     for (int i = 0; i < p.vertices.Count; i++)
                     {
-                        e.Graphics.DrawLine((p.vertices[i].brush == p.vertices[(i + 1) % p.vertices.Count].brush) ? pensEdge[(int)p.vertices[i].brush] : pensEdge[(int)brushesColor.normal], p.vertices[i].point, p.vertices[(i + 1) % p.vertices.Count].point);
+                        edgeColor = (p.vertices[i].brush == p.vertices[(i + 1) % p.vertices.Count].brush) ? p.vertices[i].brush : brushesColor.normal;
+                        if (useBresenham)
+                        {
+                            DrawLineBresenham(e.Graphics, p.vertices[i].point, p.vertices[(i + 1) % p.vertices.Count].point, edgeColor);
+                        }
+                        else
+                        {
+                            e.Graphics.DrawLine(pensEdge[(int)edgeColor], p.vertices[i].point, p.vertices[(i + 1) % p.vertices.Count].point);
+                        }
+
+                        //e.Graphics.DrawLine((p.vertices[i].brush == p.vertices[(i + 1) % p.vertices.Count].brush) ? pensEdge[(int)p.vertices[i].brush] : pensEdge[(int)brushesColor.normal], p.vertices[i].point, p.vertices[(i + 1) % p.vertices.Count].point);
                     }
 
                     foreach (Vertex v in p.vertices)
