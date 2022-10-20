@@ -152,7 +152,7 @@ namespace PRO1
         }
         private void SetState_addRelationFixedLength()
         {
-            state = AppState.addRelationFixedLength;
+            state = AppState.RelationFixedLength;
             buttonFixedRelation_SetState_AddRelation();
         }
 
@@ -208,7 +208,7 @@ namespace PRO1
                         SetState_Ready();
                         break;
                     case AppState.newPolygonDrawing:
-                        tempPolygon.edges[tempPolygon.edges.Count - 1].Discard();
+                        tempPolygon.edges[tempPolygon.edges.Count - 1].DiscardRelation();
                         tempPolygon.edges.RemoveAt(tempPolygon.edges.Count - 1);
                         tempPolygon.vertices.RemoveAt(tempPolygon.vertices.Count - 1);
                         if (tempPolygon.vertices.Count <= 0)
@@ -219,6 +219,24 @@ namespace PRO1
                         {
                             canvas.Invalidate();
                         }
+                        break;
+                    case AppState.RelationFixedLength:
+                        SearchThroughPolygonsOnClick(position);
+                        if (selectedEdge == null)
+                        {
+                            CGP1.ActiveForm.Text = "No edge selected for a fixed length relation";
+                            //buttonDebug.Text = 
+                            SetState_Ready();
+                            return;
+                        }
+                        if (selectedEdge.relation != null)
+                        {
+                            selectedEdge.DiscardRelation();
+                            canvas.Invalidate();
+                            return;
+                        }
+
+                        SetState_Ready();
                         break;
                     case AppState.ready:
                         SearchThroughPolygonsOnClick(position);
@@ -235,7 +253,7 @@ namespace PRO1
                             Edge nuEdge = new Edge(vertices[0], vertices[1], selectedPolygon);
                             foreach (Edge edge in selectedVertex.GetEdges())
                             {
-                                edge.Discard();
+                                edge.DiscardRelation();
                                 selectedPolygon.edges.Remove(edge);
                             }
                             selectedPolygon.vertices.Remove(selectedVertex);
@@ -253,7 +271,7 @@ namespace PRO1
                             selectedPolygon.vertices.Add(nuVertex);
 
                             // Discard the edge connecting new Vertex's neighbors
-                            selectedEdge.Discard();
+                            selectedEdge.DiscardRelation();
                             selectedPolygon.edges.Remove(selectedEdge);
                         }
                         canvas.Invalidate();
@@ -299,18 +317,6 @@ namespace PRO1
                             }
                             else
                             {
-                                //foreach (Polygon p in polygons)
-                                //{
-                                //    foreach (Vertex v in p.vertices)
-                                //    {
-                                //        if (DistanceFromVertexSquared(position, v.point) < toleranceRadius * radius * radius) return;
-                                //    }
-                                //}
-                                //foreach (Vertex v in tempPolygon.vertices)
-                                //{
-                                //    if (DistanceFromVertexSquared(position, v.point) < toleranceRadius * radius * radius) return;
-                                //}
-
                                 SearchThroughPolygonsOnClick(position);
                                 if (selectedPolygon != null) return;
 
@@ -322,23 +328,26 @@ namespace PRO1
                             canvas.Invalidate();
                             break;
                         }
-                    case AppState.addRelationFixedLength:
+                    case AppState.RelationFixedLength:
                         SearchThroughPolygonsOnClick(position);
                         if (selectedEdge == null)
                         {
-                            buttonDebug.Text = "No vertex or edge selected";
+                            CGP1.ActiveForm.Text = "No edge selected for a fixed length relation";
+                            //buttonDebug.Text = 
                             SetState_Ready();
                             return;
                         }
                         if(selectedEdge.relation != null)
                         {
-                            SetState_Ready();
-                            break;
+                            selectedEdge.DiscardRelation();                  
+                        }
+                        else
+                        {
+                            RelationFixedLength relation = new RelationFixedLength(selectedEdge);
+                            selectedEdge.relation = relation;
                         }
 
-                        RelationFixedLength relation = new RelationFixedLength(selectedEdge);
-                        selectedEdge.relation = relation;
-                        SetState_Ready();
+                        canvas.Invalidate();
                         break;
                     case AppState.ready:
                         SearchThroughPolygonsOnClick(position);

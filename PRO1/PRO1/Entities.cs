@@ -15,7 +15,7 @@ namespace PRO1
             movePolygon,
             moveEdge,
             moveVertex,
-            addRelationFixedLength,
+            RelationFixedLength,
             addRelationPerpendicular
         }
         public enum brushesColor { normal, highlight, RelConstLen, RelPerpendicular}
@@ -135,9 +135,10 @@ namespace PRO1
                 v1.EnforceRelation();
                 v2.EnforceRelation();
             }
-            public void Discard()
+            public void DiscardRelation()
             {
                 relation = null;
+                SetColor(brushesColor.normal);
             }
         }
         public class Polygon
