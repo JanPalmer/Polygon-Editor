@@ -1,0 +1,17 @@
+D:\Studia-2022-2023-sem5\Grafika_Komputerowa_1\PRO1\PRO1\bin\Debug\netcoreapp3.1\PRO1.exe
+D:\Studia-2022-2023-sem5\Grafika_Komputerowa_1\PRO1\PRO1\bin\Debug\netcoreapp3.1\PRO1.deps.json
+D:\Studia-2022-2023-sem5\Grafika_Komputerowa_1\PRO1\PRO1\bin\Debug\netcoreapp3.1\PRO1.runtimeconfig.json
+D:\Studia-2022-2023-sem5\Grafika_Komputerowa_1\PRO1\PRO1\bin\Debug\netcoreapp3.1\PRO1.runtimeconfig.dev.json
+D:\Studia-2022-2023-sem5\Grafika_Komputerowa_1\PRO1\PRO1\bin\Debug\netcoreapp3.1\PRO1.dll
+D:\Studia-2022-2023-sem5\Grafika_Komputerowa_1\PRO1\PRO1\bin\Debug\netcoreapp3.1\PRO1.pdb
+D:\Studia-2022-2023-sem5\Grafika_Komputerowa_1\PRO1\PRO1\obj\Debug\netcoreapp3.1\PRO1.csproj.AssemblyReference.cache
+D:\Studia-2022-2023-sem5\Grafika_Komputerowa_1\PRO1\PRO1\obj\Debug\netcoreapp3.1\PRO1.csproj.GenerateResource.cache
+D:\Studia-2022-2023-sem5\Grafika_Komputerowa_1\PRO1\PRO1\obj\Debug\netcoreapp3.1\PRO1.GeneratedMSBuildEditorConfig.editorconfig
+D:\Studia-2022-2023-sem5\Grafika_Komputerowa_1\PRO1\PRO1\obj\Debug\netcoreapp3.1\PRO1.AssemblyInfoInputs.cache
+D:\Studia-2022-2023-sem5\Grafika_Komputerowa_1\PRO1\PRO1\obj\Debug\netcoreapp3.1\PRO1.AssemblyInfo.cs
+D:\Studia-2022-2023-sem5\Grafika_Komputerowa_1\PRO1\PRO1\obj\Debug\netcoreapp3.1\PRO1.csproj.CoreCompileInputs.cache
+D:\Studia-2022-2023-sem5\Grafika_Komputerowa_1\PRO1\PRO1\obj\Debug\netcoreapp3.1\PRO1.dll
+D:\Studia-2022-2023-sem5\Grafika_Komputerowa_1\PRO1\PRO1\obj\Debug\netcoreapp3.1\PRO1.pdb
+D:\Studia-2022-2023-sem5\Grafika_Komputerowa_1\PRO1\PRO1\obj\Debug\netcoreapp3.1\PRO1.genruntimeconfig.cache
+D:\Studia-2022-2023-sem5\Grafika_Komputerowa_1\PRO1\PRO1\obj\Debug\netcoreapp3.1\PRO1.Properties.Resources.resources
+D:\Studia-2022-2023-sem5\Grafika_Komputerowa_1\PRO1\PRO1\obj\Debug\netcoreapp3.1\PRO1.CGP1.resources

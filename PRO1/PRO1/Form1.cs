@@ -526,6 +526,8 @@ namespace PRO1
             }
             else
             {
+                Graphics g = Graphics.FromImage(drawArea);
+                g.Clear(Color.White);
                 buttonDebug.Text = "Using Build-in";
             }
             canvas.Invalidate();
@@ -578,13 +580,23 @@ namespace PRO1
         //        }
         //}
 
-        public void DrawPoint(Graphics g, brushesColor color, Point p)
+        public void DrawPoint(Graphics g, Color color, Point p)
         {
-            //if(p.X > 0 && p.Y > 0 && p.X < canvas.Image.Width && p.Y < canvas.Image.Height)
-            g.FillEllipse(brushesVertex[(int)color], p.X, p.Y, edgeThickness, edgeThickness);
+            if(p.X > 0 && p.Y > 0 && p.X < canvas.Image.Width - 1 && p.Y < canvas.Image.Height - 1)
+            {
+                //g.FillEllipse(brushesVertex[(int)color], p.X, p.Y, edgeThickness, edgeThickness);
+                for(int y = -1; y <= 1; y++)
+                    for(int x = -1; x <= 1; x++)
+                    {
+                        if ((x ^ y) != 0 || (x == 0 && y == 0))
+                        {
+                            drawArea.SetPixel(p.X + x, p.Y + y, color);
+                        }
+                    }
+            }
         }
 
-        public void DrawLineBresenham(Graphics g, Point p, Point k, brushesColor color)
+        public void DrawLineBresenham(Graphics g, Point p, Point k, Color color)
         {
             buttonEdge.Text = $"Drawing {p.X},{p.Y} to {k.X},{k.Y}";
             int w = k.X - p.X;
@@ -626,30 +638,21 @@ namespace PRO1
 
         private void canvas_Paint(object sender, PaintEventArgs e)
         {
-            brushesColor edgeColor;
+            Graphics graph = Graphics.FromImage(drawArea);
+            if (useBresenham)
+            {
+
+                graph.Clear(Color.White);
+            }
 
             if (tempPolygon != null)
             {
-                //if (tempPolygon.vertices.Count > 1)
-                //    for (int i = 0; i < tempPolygon.vertices.Count - 1; i++)
-                //    {
-                //        edgeColor = tempPolygon.vertices[i].brush;
-                //        if (useBresenham)
-                //        {
-                //            DrawLineBresenham(e.Graphics, tempPolygon.vertices[i].point, tempPolygon.vertices[i + 1].point, edgeColor);
-                //        }
-                //        else
-                //        {
-                //            e.Graphics.DrawLine(pensEdge[(int)edgeColor], tempPolygon.vertices[i].point, tempPolygon.vertices[i + 1].point);
-                //        }
-                //    }
-
                 if (tempPolygon.vertices.Count > 1)
                 {
                     foreach(Edge edge in tempPolygon.edges)
                     {
                         if (useBresenham)
-                            DrawLineBresenham(e.Graphics, edge.v1.point, edge.v2.point, edge.color);
+                            DrawLineBresenham(graph, edge.v1.point, edge.v2.point, GetColorFromBrush(edge.color));
                         else
                             e.Graphics.DrawLine(pensEdge[(int)edge.color], edge.v1.point, edge.v2.point);
                     }
@@ -664,25 +667,10 @@ namespace PRO1
             if (polygons != null)
                 foreach (Polygon p in polygons)
                 {
-                    //for (int i = 0; i < p.vertices.Count; i++)
-                    //{
-                    //    edgeColor = (p.vertices[i].brush == p.vertices[(i + 1) % p.vertices.Count].brush) ? p.vertices[i].brush : brushesColor.normal;
-                    //    if (useBresenham)
-                    //    {
-                    //        DrawLineBresenham(e.Graphics, p.vertices[i].point, p.vertices[(i + 1) % p.vertices.Count].point, edgeColor);
-                    //    }
-                    //    else
-                    //    {
-                    //        e.Graphics.DrawLine(pensEdge[(int)edgeColor], p.vertices[i].point, p.vertices[(i + 1) % p.vertices.Count].point);
-                    //    }
-
-                    //    //e.Graphics.DrawLine((p.vertices[i].brush == p.vertices[(i + 1) % p.vertices.Count].brush) ? pensEdge[(int)p.vertices[i].brush] : pensEdge[(int)brushesColor.normal], p.vertices[i].point, p.vertices[(i + 1) % p.vertices.Count].point);
-                    //}
-
                     foreach (Edge edge in p.edges)
                     {
                         if (useBresenham)
-                            DrawLineBresenham(e.Graphics, edge.v1.point, edge.v2.point, edge.color);
+                            DrawLineBresenham(graph, edge.v1.point, edge.v2.point, GetColorFromBrush(edge.color));
                         else
                             e.Graphics.DrawLine(pensEdge[(int)edge.color], edge.v1.point, edge.v2.point);
                     }

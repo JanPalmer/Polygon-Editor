@@ -19,7 +19,13 @@ namespace PRO1
             addRelationPerpendicular
         }
         public enum brushesColor { normal, highlight, RelConstLen, RelPerpendicular}
+        public static Color[] colorEdge = { Color.Black, Color.DarkOrange, Color.LightGreen, Color.Red };
         public static Brush[] brushesVertex = { Brushes.Black, Brushes.DarkOrange, Brushes.LightGreen, Brushes.Red };
+
+        public static Color GetColorFromBrush(brushesColor color)
+        {
+            return colorEdge[(int)color];
+        }
 
         public class Vertex
         {
