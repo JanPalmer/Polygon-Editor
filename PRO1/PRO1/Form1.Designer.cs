@@ -33,13 +33,13 @@ namespace PRO1
             this.panelControl = new System.Windows.Forms.TableLayoutPanel();
             this.buttonNewPolygon = new System.Windows.Forms.Button();
             this.buttonClearSpace = new System.Windows.Forms.Button();
-            this.buttonEdge = new System.Windows.Forms.Button();
+            this.buttonFixedRelation = new System.Windows.Forms.Button();
             this.groupBoxAlgorithm = new System.Windows.Forms.GroupBox();
             this.radioButtonBuildIn = new System.Windows.Forms.RadioButton();
             this.radioButtonBresenham = new System.Windows.Forms.RadioButton();
-            this.buttonSpace = new System.Windows.Forms.Button();
+            this.buttonEdge = new System.Windows.Forms.Button();
             this.buttonDebug = new System.Windows.Forms.Button();
-            this.buttonFixedRelation = new System.Windows.Forms.Button();
+            this.buttonPerpendicularRelation = new System.Windows.Forms.Button();
             this.canvas = new System.Windows.Forms.PictureBox();
             this.tableLayoutPanel1.SuspendLayout();
             this.panelControl.SuspendLayout();
@@ -71,21 +71,22 @@ namespace PRO1
             this.panelControl.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.panelControl.Controls.Add(this.buttonNewPolygon, 0, 0);
             this.panelControl.Controls.Add(this.buttonClearSpace, 0, 1);
-            this.panelControl.Controls.Add(this.buttonEdge, 0, 4);
-            this.panelControl.Controls.Add(this.groupBoxAlgorithm, 0, 6);
-            this.panelControl.Controls.Add(this.buttonSpace, 0, 5);
-            this.panelControl.Controls.Add(this.buttonDebug, 0, 3);
             this.panelControl.Controls.Add(this.buttonFixedRelation, 0, 2);
+            this.panelControl.Controls.Add(this.groupBoxAlgorithm, 0, 7);
+            this.panelControl.Controls.Add(this.buttonEdge, 0, 6);
+            this.panelControl.Controls.Add(this.buttonDebug, 0, 4);
+            this.panelControl.Controls.Add(this.buttonPerpendicularRelation, 0, 3);
             this.panelControl.Location = new System.Drawing.Point(633, 3);
             this.panelControl.Name = "panelControl";
-            this.panelControl.RowCount = 7;
+            this.panelControl.RowCount = 8;
             this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 67F));
-            this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 118F));
+            this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 60F));
             this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 105F));
+            this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 75F));
+            this.panelControl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 108F));
             this.panelControl.Size = new System.Drawing.Size(148, 505);
             this.panelControl.TabIndex = 0;
             // 
@@ -115,17 +116,18 @@ namespace PRO1
             this.buttonClearSpace.UseVisualStyleBackColor = true;
             this.buttonClearSpace.MouseClick += new System.Windows.Forms.MouseEventHandler(this.buttonClearSpace_MouseClick);
             // 
-            // buttonEdge
+            // buttonFixedRelation
             // 
-            this.buttonEdge.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.buttonFixedRelation.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonEdge.Location = new System.Drawing.Point(3, 220);
-            this.buttonEdge.Name = "buttonEdge";
-            this.buttonEdge.Size = new System.Drawing.Size(142, 112);
-            this.buttonEdge.TabIndex = 5;
-            this.buttonEdge.Text = "button1";
-            this.buttonEdge.UseVisualStyleBackColor = true;
+            this.buttonFixedRelation.Location = new System.Drawing.Point(3, 103);
+            this.buttonFixedRelation.Name = "buttonFixedRelation";
+            this.buttonFixedRelation.Size = new System.Drawing.Size(142, 44);
+            this.buttonFixedRelation.TabIndex = 7;
+            this.buttonFixedRelation.Text = "Add Fixed Length Relation";
+            this.buttonFixedRelation.UseVisualStyleBackColor = true;
+            this.buttonFixedRelation.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonFixedRelation_MouseDown);
             // 
             // groupBoxAlgorithm
             // 
@@ -134,9 +136,9 @@ namespace PRO1
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBoxAlgorithm.Controls.Add(this.radioButtonBuildIn);
             this.groupBoxAlgorithm.Controls.Add(this.radioButtonBresenham);
-            this.groupBoxAlgorithm.Location = new System.Drawing.Point(3, 396);
+            this.groupBoxAlgorithm.Location = new System.Drawing.Point(3, 355);
             this.groupBoxAlgorithm.Name = "groupBoxAlgorithm";
-            this.groupBoxAlgorithm.Size = new System.Drawing.Size(142, 106);
+            this.groupBoxAlgorithm.Size = new System.Drawing.Size(142, 147);
             this.groupBoxAlgorithm.TabIndex = 0;
             this.groupBoxAlgorithm.TabStop = false;
             this.groupBoxAlgorithm.Text = "Current Edge Drawing Algorithm";
@@ -164,39 +166,42 @@ namespace PRO1
             this.radioButtonBresenham.UseVisualStyleBackColor = true;
             this.radioButtonBresenham.CheckedChanged += new System.EventHandler(this.radioButtonBresenham_CheckedChanged);
             // 
-            // buttonSpace
+            // buttonEdge
             // 
-            this.buttonSpace.Location = new System.Drawing.Point(3, 338);
-            this.buttonSpace.Name = "buttonSpace";
-            this.buttonSpace.Size = new System.Drawing.Size(142, 52);
-            this.buttonSpace.TabIndex = 6;
-            this.buttonSpace.Text = "button1";
-            this.buttonSpace.UseVisualStyleBackColor = true;
+            this.buttonEdge.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonEdge.Location = new System.Drawing.Point(3, 280);
+            this.buttonEdge.Name = "buttonEdge";
+            this.buttonEdge.Size = new System.Drawing.Size(142, 69);
+            this.buttonEdge.TabIndex = 5;
+            this.buttonEdge.Text = "button1";
+            this.buttonEdge.UseVisualStyleBackColor = true;
             // 
             // buttonDebug
             // 
             this.buttonDebug.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonDebug.Location = new System.Drawing.Point(3, 153);
+            this.buttonDebug.Location = new System.Drawing.Point(3, 220);
             this.buttonDebug.Name = "buttonDebug";
-            this.buttonDebug.Size = new System.Drawing.Size(142, 61);
+            this.buttonDebug.Size = new System.Drawing.Size(142, 54);
             this.buttonDebug.TabIndex = 3;
             this.buttonDebug.Text = "button1";
             this.buttonDebug.UseVisualStyleBackColor = true;
             // 
-            // buttonFixedRelation
+            // buttonPerpendicularRelation
             // 
-            this.buttonFixedRelation.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.buttonPerpendicularRelation.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonFixedRelation.Location = new System.Drawing.Point(3, 103);
-            this.buttonFixedRelation.Name = "buttonFixedRelation";
-            this.buttonFixedRelation.Size = new System.Drawing.Size(142, 44);
-            this.buttonFixedRelation.TabIndex = 7;
-            this.buttonFixedRelation.Text = "Add Fixed Length Relation";
-            this.buttonFixedRelation.UseVisualStyleBackColor = true;
-            this.buttonFixedRelation.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonFixedRelation_MouseDown);
+            this.buttonPerpendicularRelation.Location = new System.Drawing.Point(3, 153);
+            this.buttonPerpendicularRelation.Name = "buttonPerpendicularRelation";
+            this.buttonPerpendicularRelation.Size = new System.Drawing.Size(142, 61);
+            this.buttonPerpendicularRelation.TabIndex = 6;
+            this.buttonPerpendicularRelation.Text = "Add Perpendicularity Relation";
+            this.buttonPerpendicularRelation.UseVisualStyleBackColor = true;
+            this.buttonPerpendicularRelation.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonPerpendicularRelation_MouseDown);
             // 
             // canvas
             // 
@@ -247,7 +252,7 @@ namespace PRO1
         private System.Windows.Forms.Button buttonClearSpace;
         private System.Windows.Forms.Button buttonDebug;
         private System.Windows.Forms.Button buttonEdge;
-        private System.Windows.Forms.Button buttonSpace;
+        private System.Windows.Forms.Button buttonPerpendicularRelation;
         private System.Windows.Forms.Button buttonFixedRelation;
     }
 }

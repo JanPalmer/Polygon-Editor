@@ -18,10 +18,13 @@ namespace PRO1
     //    Przesuwanie krawędzi (LPM na krawędzi)
     //    Przesuwanie całego wielokąta (Space + LPM na dowolną część wielokąta)
     //    Usuwanie wielokąta (Space + PPM na dowolną część wielokąta)
-    //Nie działa:
-    //Nie zaimplementowane:
     //    Algorytm Bresenhama
     //    Przełączanie się między algorytmami
+    //    Relacja stałej długości krawędzi - trzęsie się, co jest wynikiem opóźnień w obliczeniach przy przesuwaniu.
+    //    SPRAWDZIĆ JESZCZE RAZ ALGORYTM DOSUWANIA WIERZCHOŁKA ORAZ MOŻE ZOPTYMALIZOWAĆ METODĘ Vertex.GetEdges()
+    //    TRZĘSIE SIĘ PRZY BARDZIEJ GWAŁTOWNYCH RUCHACH
+    //Nie działa:
+    //Nie zaimplementowane:
     //    Ograniczenia
     //    Predefiniowana scena
     //Dodatkowo dodane:
@@ -30,7 +33,19 @@ namespace PRO1
 
     public partial class CGP1 : Form
     {
-        public const int radius = 10, edgeThickness = 2, toleranceSquared = 50, toleranceRadius = 4;
+        public enum AppState
+        {
+            ready,
+            newPolygonBegin,
+            newPolygonDrawing,
+            movePolygon,
+            moveEdge,
+            moveVertex,
+            RelationFixedLength,
+            RelationPerpendicular
+        }
+
+        public const int radius = 10, edgeThickness = 4, toleranceSquared = 100, toleranceRadius = 5, textOffset = 10;
         public Rectangle rec;
         // 0 - normal, 1 - highlight/selected, 2 - constant length, 3 - relation
         public Pen[] pensEdge;
@@ -52,48 +67,7 @@ namespace PRO1
 
         public bool isPressedSpace = false;
 
-        //public int EdgeLenSquared(Vertex v1, Vertex v2)
-        //{
-        //    int x = v1.point.X - v2.point.X;
-        //    int y = v1.point.Y - v2.point.Y;
-        //    return x * x + y * y;
-        //}
-        //public int EdgeLenSquared(Point p1, Point p2)
-        //{
-        //    int x = p1.X - p2.X;
-        //    int y = p1.Y - p2.Y;
-        //    return x * x + y * y;
-        //}
-        //public int EdgeLenSquared((int X, int Y) p1, (int X, int Y) p2)
-        //{
-        //    int x = p1.X - p2.X;
-        //    int y = p1.Y - p2.Y;
-        //    return x * x + y * y;
-        //}
-        //public int DistanceFromEdgeSquared((int x, int y) p1, (int x, int y) p2, (int x, int y) p)
-        //{
-        //    int A = p.x - p1.x;
-        //    int B = p.y - p1.y;
-        //    int C = p2.x - p1.x;
-        //    int D = p2.y - p1.y;
-
-        //    int dot = A * C + B * D;
-        //    int len_sq = C * C + D * D;
-        //    float param = dot / len_sq;
-            
-        //    if (param <= 0 || param >= 1) return int.MaxValue;
-
-        //    int xx = p1.x + (int)(param * C);
-        //    int yy = p1.y + (int)(param * D);
-        //    int dx = p.x - xx, dy = p.y - yy;
-        //    return dx * dx + dy * dy;
-        //}
-        //public int DistanceFromVertexSquared((int x, int y) p, (int x, int y) v)
-        //{
-        //    int dx = p.x - v.x;
-        //    int dy = p.y - v.y;
-        //    return dx * dx + dy * dy;
-        //}
+        public Edge perpendicularPretendent;
 
         public CGP1()
         {
@@ -137,13 +111,25 @@ namespace PRO1
             buttonFixedRelation.Text = "Add Fixed Length Relation";
         }
 
+        private void buttonPerpendicularRelation_SetState_AddRelation()
+        {
+            buttonPerpendicularRelation.BackColor = SystemColors.GradientActiveCaption;
+            buttonPerpendicularRelation.Text = "Cancel Adding Relation";
+        }
+        private void buttonPerpendicularRelation_SetState_Ready()
+        {
+            buttonPerpendicularRelation.BackColor = SystemColors.Control;
+            buttonPerpendicularRelation.Text = "Add Perpendicularity Relation";
+        }
+
         private void SetState_Ready()
         {
             tempPolygon = null;
-            canvas.Invalidate();
+            DrawFrame();
             state = AppState.ready;
             buttonNewPolygon_SetState_Ready();
             buttonFixedRelation_SetState_Ready();
+            buttonPerpendicularRelation_SetState_Ready();
         }
         private void SetState_newPolygon()
         {
@@ -154,6 +140,11 @@ namespace PRO1
         {
             state = AppState.RelationFixedLength;
             buttonFixedRelation_SetState_AddRelation();
+        }
+        private void SetState_addRelationPerpendicular()
+        {
+            state = AppState.RelationPerpendicular;
+            buttonPerpendicularRelation_SetState_AddRelation();
         }
 
         private void SearchThroughPolygonsOnClick(Point position)
@@ -217,7 +208,7 @@ namespace PRO1
                         }
                         else
                         {
-                            canvas.Invalidate();
+                            DrawFrame();
                         }
                         break;
                     case AppState.RelationFixedLength:
@@ -225,25 +216,39 @@ namespace PRO1
                         if (selectedEdge == null)
                         {
                             CGP1.ActiveForm.Text = "No edge selected for a fixed length relation";
-                            //buttonDebug.Text = 
                             SetState_Ready();
                             return;
                         }
-                        if (selectedEdge.relation != null)
+                        if (selectedEdge.relation != null && selectedEdge.relation.GetType() == typeof(RelationFixedLength))
                         {
                             selectedEdge.DiscardRelation();
-                            canvas.Invalidate();
+                            DrawFrame();
                             return;
                         }
 
                         SetState_Ready();
+                        break;
+                    case AppState.RelationPerpendicular:
+                        SearchThroughPolygonsOnClick(position);
+                        if(selectedEdge == null)
+                        {
+                            CGP1.ActiveForm.Text = "No edge selected for a perpendicularity relation";
+                            SetState_Ready();
+                            return;
+                        }
+                        if (selectedEdge.relation != null && selectedEdge.relation.GetType() == typeof(RelationPerpendicular))
+                        {
+                            selectedEdge.DiscardRelation();
+                            DrawFrame();
+                            return;
+                        }
                         break;
                     case AppState.ready:
                         SearchThroughPolygonsOnClick(position);
                         if (isPressedSpace == true && selectedPolygon != null)
                         {
                             polygons.Remove(selectedPolygon);
-                            canvas.Invalidate();
+                            DrawFrame();
                             return;
                         }
 
@@ -267,14 +272,15 @@ namespace PRO1
 
                             // Add the new Vertex and two new Edges to connect it to its neighbors
                             selectedPolygon.edges.Add(new Edge(selectedEdge.v1, nuVertex, selectedPolygon));
-                            selectedPolygon.edges.Add(new Edge(selectedEdge.v2, nuVertex, selectedPolygon));
+                            selectedPolygon.edges.Add(new Edge(nuVertex, selectedEdge.v2, selectedPolygon));
                             selectedPolygon.vertices.Add(nuVertex);
 
                             // Discard the edge connecting new Vertex's neighbors
                             selectedEdge.DiscardRelation();
                             selectedPolygon.edges.Remove(selectedEdge);
                         }
-                        canvas.Invalidate();
+                        DrawFrame();
+                        //canvas.Invalidate();
                         break;
                     default:
                         break;
@@ -293,7 +299,8 @@ namespace PRO1
                             tempPolygon.vertices = new List<Vertex>();
                             tempPolygon.edges = new List<Edge>();
                             tempPolygon.vertices.Add(new Vertex(position, tempPolygon, brushesColor.highlight));
-                            canvas.Invalidate();
+                            DrawFrame();
+                            //canvas.Invalidate();
                             state = AppState.newPolygonDrawing;
                             break;
                         }
@@ -325,7 +332,8 @@ namespace PRO1
                                 tempPolygon.vertices.Add(nuVertex);
                                 tempPolygon.edges.Add(nuEdge);
                             }
-                            canvas.Invalidate();
+                            DrawFrame();
+                            //canvas.Invalidate();
                             break;
                         }
                     case AppState.RelationFixedLength:
@@ -337,7 +345,7 @@ namespace PRO1
                             SetState_Ready();
                             return;
                         }
-                        if(selectedEdge.relation != null)
+                        if(selectedEdge.relation != null && selectedEdge.relation.GetType() == typeof(RelationFixedLength))
                         {
                             selectedEdge.DiscardRelation();                  
                         }
@@ -347,7 +355,51 @@ namespace PRO1
                             selectedEdge.relation = relation;
                         }
 
-                        canvas.Invalidate();
+                        DrawFrame();
+                        //canvas.Invalidate();
+                        break;
+                    case AppState.RelationPerpendicular:
+                        SearchThroughPolygonsOnClick(position);
+                        if (selectedEdge == null)
+                        {
+                            CGP1.ActiveForm.Text = "No edge selected for a perpendicularity relation";
+                            if (perpendicularPretendent != null)
+                            {
+                                perpendicularPretendent.SetColor(brushesColor.normal);
+                                perpendicularPretendent = null;
+                            }
+                            SetState_Ready();
+                            return;
+                        }
+                        if (selectedEdge.relation != null && selectedEdge.relation.GetType() == typeof(RelationPerpendicular))
+                        {
+                            selectedEdge.DiscardRelation();
+                            if(perpendicularPretendent != null)
+                            {
+                                perpendicularPretendent.SetColor(brushesColor.normal);
+                                perpendicularPretendent = null;
+                            }
+                        }
+                        else
+                        {
+                            if (perpendicularPretendent == null)
+                            {
+                                perpendicularPretendent = selectedEdge;
+                                perpendicularPretendent.SetColor(brushesColor.RelPerpendicular);
+                            }
+                            else
+                            {
+                                RelationPerpendicular rel = new RelationPerpendicular(selectedEdge, perpendicularPretendent);
+                                selectedEdge.relation = rel;
+                                perpendicularPretendent.relation = rel;
+                                foreach (Polygon p in polygons) p.visited = false;
+                                perpendicularPretendent.EnforceRelation(null);
+                                perpendicularPretendent = null;
+                                SetState_Ready();
+                            }
+                        }
+
+                        DrawFrame();
                         break;
                     case AppState.ready:
                         SearchThroughPolygonsOnClick(position);
@@ -394,6 +446,7 @@ namespace PRO1
             {
                 int dx = e.X - originalMousePosition.X;
                 int dy = e.Y - originalMousePosition.Y;
+                foreach (Polygon p in polygons) p.visited = false;
                 if (state == AppState.movePolygon)
                 {
                     foreach (Vertex v in selectedPolygon.vertices)
@@ -405,16 +458,16 @@ namespace PRO1
                 {
                     buttonDebug.Text = "Vertex shmovin'";
                     selectedVertex.Move(dx, dy);
-                    selectedVertex.EnforceRelation();
+                    selectedVertex.EnforceRelation(null);
                 }
                 else if (selectedEdge != null)
                 {
                     buttonDebug.Text = "Edge shmovin'";
                     selectedEdge.Move(dx, dy);
-                    selectedEdge.EnforceRelation();
+                    selectedEdge.EnforceRelation(null);
                 }
 
-                canvas.Invalidate();
+                DrawFrame();
                 originalMousePosition = e.Location;
             }
         }
@@ -424,6 +477,7 @@ namespace PRO1
             {
                 if (isPressedLMB == true)
                 {
+                    foreach (Polygon p in polygons) p.visited = false;
                     isPressedLMB = false;
                     if(state == AppState.movePolygon)
                     {
@@ -432,17 +486,16 @@ namespace PRO1
                         selectedPolygon.SetEdgeBrush(brushesColor.normal);
                         selectedPolygon = null;
                         state = AppState.ready;
-                        canvas.Invalidate();
+                        //canvas.Invalidate();
                         //buttonLMB.Text = "LMB false";
                     }
                     else if(selectedVertex != null)
                     {
                         buttonDebug.Text = "Vertex released";
                         selectedVertex.SetColor(brushesColor.normal);
-                        selectedPolygon.inBFS = false;
-                        selectedVertex.EnforceRelation();
+                        selectedVertex.EnforceRelation(null);
                         selectedVertex = null;
-                        canvas.Invalidate();
+                        //canvas.Invalidate();
                         //buttonLMB.Text = "LMB false";
                     }
                     else if(selectedEdge != null)
@@ -451,12 +504,13 @@ namespace PRO1
                         selectedEdge.SetColor(brushesColor.normal);
                         selectedEdge.v1.SetColor(brushesColor.normal);
                         selectedEdge.v2.SetColor(brushesColor.normal);
-                        selectedPolygon.inBFS = false;
-                        selectedEdge.EnforceRelation();
+                        selectedEdge.EnforceRelation(null);
                         selectedEdge = null;
-                        canvas.Invalidate();
+                        //canvas.Invalidate();
                         //buttonLMB.Text = "LMB false";
                     }
+
+                    DrawFrame();
                 }
 
             }
@@ -479,9 +533,8 @@ namespace PRO1
         {
             if (e.KeyCode == Keys.Space)
             {
-                //state = AppState.movePolygon;
                 isPressedSpace = true;
-                buttonSpace.Text = "Space pressed";
+                //buttonPerpendicularRelation.Text = "Space pressed";
             }
         }
 
@@ -490,9 +543,8 @@ namespace PRO1
             //buttonSpace.Text = $"{e.KeyCode}";
             if (e.KeyCode == Keys.Space)
             {
-                //state = AppState.ready;
                 isPressedSpace = false;
-                buttonSpace.Text = "Space depressed";
+                //buttonPerpendicularRelation.Text = "Space depressed";
             }
         }
 
@@ -504,13 +556,6 @@ namespace PRO1
                 SetState_Ready();
             }
         }
-
-        //public void DrawVertex(Vertex v)
-        //{
-        //    if (v == null) return;
-        //    rec.Location = new System.Drawing.Point(v.point.X - radius, v.point.Y - radius);
-        //    graph.FillEllipse(brushVertex, rec);
-        //}
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -526,9 +571,11 @@ namespace PRO1
             }
             else
             {
+                Graphics g = Graphics.FromImage(drawArea);
+                g.Clear(Color.White);
                 buttonDebug.Text = "Using Build-in";
             }
-            canvas.Invalidate();
+            DrawFrame();
         }
 
         private void buttonFixedRelation_MouseDown(object sender, MouseEventArgs e)
@@ -537,6 +584,19 @@ namespace PRO1
                 if (state == AppState.ready)
                 {
                     SetState_addRelationFixedLength();
+                }
+                else
+                {
+                    SetState_Ready();
+                }
+        }
+
+        private void buttonPerpendicularRelation_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+                if (state == AppState.ready)
+                {
+                    SetState_addRelationPerpendicular();
                 }
                 else
                 {
@@ -578,13 +638,23 @@ namespace PRO1
         //        }
         //}
 
-        public void DrawPoint(Graphics g, brushesColor color, Point p)
+        public void DrawPoint(Graphics g, Color color, Point p)
         {
-            //if(p.X > 0 && p.Y > 0 && p.X < canvas.Image.Width && p.Y < canvas.Image.Height)
-            g.FillEllipse(brushesVertex[(int)color], p.X, p.Y, edgeThickness, edgeThickness);
+            if(p.X > 0 && p.Y > 0 && p.X < canvas.Image.Width - 1 && p.Y < canvas.Image.Height - 1)
+            {
+                //g.FillEllipse(brushesVertex[(int)color], p.X, p.Y, edgeThickness, edgeThickness);
+                for(int y = -1; y <= 1; y++)
+                    for(int x = -1; x <= 1; x++)
+                    {
+                        if ((x ^ y) != 0 || (x == 0 && y == 0))
+                        {
+                            drawArea.SetPixel(p.X + x, p.Y + y, color);
+                        }
+                    }
+            }
         }
 
-        public void DrawLineBresenham(Graphics g, Point p, Point k, brushesColor color)
+        public void DrawLineBresenham(Graphics g, Point p, Point k, Color color)
         {
             buttonEdge.Text = $"Drawing {p.X},{p.Y} to {k.X},{k.Y}";
             int w = k.X - p.X;
@@ -624,38 +694,34 @@ namespace PRO1
             }
         }
 
+        public void AddPerpendicularityRelationIndex(Graphics g, Edge edge, RelationPerpendicular rel)
+        {
+            int x = edge.v1.point.X + (edge.v2.point.X - edge.v1.point.X) / 2 + textOffset;
+            int y = edge.v1.point.Y + (edge.v2.point.Y - edge.v1.point.Y) / 2 + textOffset;
+            Point p = new Point(x, y);
+            g.DrawString(rel.id.ToString(), DefaultFont, brushesVertex[0], p);
+        }
+
         private void canvas_Paint(object sender, PaintEventArgs e)
         {
-            brushesColor edgeColor;
+            //Graphics graph = Graphics.FromImage(drawArea);
+            //if (useBresenham)
+            //{
+
+            //    graph.Clear(Color.White);
+            //}
 
             if (tempPolygon != null)
             {
-                //if (tempPolygon.vertices.Count > 1)
-                //    for (int i = 0; i < tempPolygon.vertices.Count - 1; i++)
-                //    {
-                //        edgeColor = tempPolygon.vertices[i].brush;
-                //        if (useBresenham)
-                //        {
-                //            DrawLineBresenham(e.Graphics, tempPolygon.vertices[i].point, tempPolygon.vertices[i + 1].point, edgeColor);
-                //        }
-                //        else
-                //        {
-                //            e.Graphics.DrawLine(pensEdge[(int)edgeColor], tempPolygon.vertices[i].point, tempPolygon.vertices[i + 1].point);
-                //        }
-                //    }
-
-                if (tempPolygon.vertices.Count > 1)
+                if (!useBresenham && tempPolygon.vertices.Count > 1)
                 {
-                    foreach(Edge edge in tempPolygon.edges)
+                    foreach (Edge edge in tempPolygon.edges)
                     {
-                        if (useBresenham)
-                            DrawLineBresenham(e.Graphics, edge.v1.point, edge.v2.point, edge.color);
-                        else
-                            e.Graphics.DrawLine(pensEdge[(int)edge.color], edge.v1.point, edge.v2.point);
+                        e.Graphics.DrawLine(pensEdge[(int)edge.color], edge.v1.point, edge.v2.point);
                     }
                 }
 
-                    foreach (Vertex v in tempPolygon.vertices)
+                foreach (Vertex v in tempPolygon.vertices)
                 {
                     e.Graphics.FillEllipse(brushesVertex[(int)v.brush], v.point.X - radius, v.point.Y - radius, 2 * radius, 2 * radius);
                 }
@@ -664,34 +730,50 @@ namespace PRO1
             if (polygons != null)
                 foreach (Polygon p in polygons)
                 {
-                    //for (int i = 0; i < p.vertices.Count; i++)
-                    //{
-                    //    edgeColor = (p.vertices[i].brush == p.vertices[(i + 1) % p.vertices.Count].brush) ? p.vertices[i].brush : brushesColor.normal;
-                    //    if (useBresenham)
-                    //    {
-                    //        DrawLineBresenham(e.Graphics, p.vertices[i].point, p.vertices[(i + 1) % p.vertices.Count].point, edgeColor);
-                    //    }
-                    //    else
-                    //    {
-                    //        e.Graphics.DrawLine(pensEdge[(int)edgeColor], p.vertices[i].point, p.vertices[(i + 1) % p.vertices.Count].point);
-                    //    }
-
-                    //    //e.Graphics.DrawLine((p.vertices[i].brush == p.vertices[(i + 1) % p.vertices.Count].brush) ? pensEdge[(int)p.vertices[i].brush] : pensEdge[(int)brushesColor.normal], p.vertices[i].point, p.vertices[(i + 1) % p.vertices.Count].point);
-                    //}
-
-                    foreach (Edge edge in p.edges)
-                    {
-                        if (useBresenham)
-                            DrawLineBresenham(e.Graphics, edge.v1.point, edge.v2.point, edge.color);
-                        else
+                    if (!useBresenham)
+                        foreach (Edge edge in p.edges)
+                        {
+                            if (edge.relation != null && edge.relation.GetType() == typeof(RelationPerpendicular))
+                                AddPerpendicularityRelationIndex(e.Graphics, edge, (RelationPerpendicular)edge.relation);
                             e.Graphics.DrawLine(pensEdge[(int)edge.color], edge.v1.point, edge.v2.point);
-                    }
+                        }
 
                     foreach (Vertex v in p.vertices)
                     {
                         e.Graphics.FillEllipse(brushesVertex[(int)v.brush], v.point.X - radius, v.point.Y - radius, 2 * radius, 2 * radius);
                     }
                 }
+        }
+
+        public void DrawFrame()
+        {
+            // If Bresenham's algorithm is selected for drawing edges, draw edges with it,
+            // then Refresh the PictureBox to launch its Paint event to paint vertices (and edges, if Bresenham was not selected)
+            if (useBresenham)
+            {
+                Graphics graph = Graphics.FromImage(drawArea);
+                graph.Clear(Color.White);
+                if (tempPolygon != null && tempPolygon.vertices.Count > 1)
+                {
+                    foreach (Edge edge in tempPolygon.edges)
+                    {
+                        DrawLineBresenham(graph, edge.v1.point, edge.v2.point, GetColorFromBrush(edge.color));
+                    }
+                }
+
+                if (polygons != null)
+                    foreach (Polygon p in polygons)
+                    {
+                        foreach (Edge edge in p.edges)
+                        {
+                            if (edge.relation != null && edge.relation.GetType() == typeof(RelationPerpendicular))
+                                AddPerpendicularityRelationIndex(graph, edge, (RelationPerpendicular)edge.relation);
+                            DrawLineBresenham(graph, edge.v1.point, edge.v2.point, GetColorFromBrush(edge.color));
+                        }
+                    }
+            }
+
+            canvas.Refresh();
         }
     }
 }

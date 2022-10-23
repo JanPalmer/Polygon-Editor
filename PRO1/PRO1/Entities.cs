@@ -7,25 +7,19 @@ namespace PRO1
 {
     public class Entities
     {
-        public enum AppState
-        {
-            ready,
-            newPolygonBegin,
-            newPolygonDrawing,
-            movePolygon,
-            moveEdge,
-            moveVertex,
-            RelationFixedLength,
-            addRelationPerpendicular
-        }
         public enum brushesColor { normal, highlight, RelConstLen, RelPerpendicular}
+        public static Color[] colorEdge = { Color.Black, Color.DarkOrange, Color.LightGreen, Color.Red };
         public static Brush[] brushesVertex = { Brushes.Black, Brushes.DarkOrange, Brushes.LightGreen, Brushes.Red };
+
+        public static Color GetColorFromBrush(brushesColor color)
+        {
+            return colorEdge[(int)color];
+        }
 
         public class Vertex
         {
             public Point point;
             public brushesColor brush { get; set; }
-            //public List<Edge> edges;
             public Polygon parent;
 
             public void ChangePlacement(Point _p)
@@ -36,13 +30,11 @@ namespace PRO1
             {
                 point.X = _X;
                 point.Y = _Y;
-                //this.EnforceRelation();
             }
             public void Move(int _dX, int _dY)
             {
                 point.X += _dX;
                 point.Y += _dY;
-                //this.EnforceRelation();
             }
             public void SetColor(brushesColor _color)
             {
@@ -66,21 +58,23 @@ namespace PRO1
                 }
                 return list;
             }
-            public void EnforceRelation()
+            public void EnforceRelation(Edge ignoreEdge)
             {
+                if (parent.visited == true) return;
+                parent.visited = true;
                 foreach (Edge edge in parent.edges) edge.visited = false;
                 Queue<Vertex> q = new Queue<Vertex>();
                 q.Enqueue(this);
                 Vertex tmp;
 
-                while(q.Count > 0)
+                while (q.Count > 0)
                 {
                     tmp = q.Dequeue();
                     foreach (Edge e in tmp.GetEdges())
                         if (e.relation != null && e.visited == false)
                         {
                             e.visited = true;
-                            e.relation.Enforce(tmp);
+                            if(e != ignoreEdge) e.relation.Enforce(tmp);                          
                             q.Enqueue(e.GetNeighbor(tmp));
                         }
                 }
@@ -130,23 +124,20 @@ namespace PRO1
             {
                 return (v1 == _base) ? v2 : v1;
             }
-            public void EnforceRelation()
+            public void EnforceRelation(Edge ignoreEdge)
             {
-                v1.EnforceRelation();
-                v2.EnforceRelation();
+                v1.EnforceRelation(ignoreEdge);
             }
             public void DiscardRelation()
             {
-                relation = null;
-                SetColor(brushesColor.normal);
+                if(relation != null)    relation.DiscardRelation();
             }
         }
         public class Polygon
         {
             public List<Vertex> vertices;
             public List<Edge> edges;
-            public bool inBFS = false;
-
+            public bool visited = true;
             public void SetVertexBrush(brushesColor _brush)
             {
                 foreach (Vertex v in this.vertices)
@@ -161,11 +152,6 @@ namespace PRO1
                     e.SetColor(_brush);
                 }
             }
-            //public void PrepareBFS()
-            //{
-            //    foreach (Edge edge in edges) edge.visited = false;
-            //    inBFS = true;
-            //}
             public void Move(int dx, int dy)
             {
                 foreach (Vertex v in vertices)
