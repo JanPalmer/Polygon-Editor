@@ -157,6 +157,12 @@ namespace PRO1
             public List<Vertex> vertices;
             public List<Edge> edges;
             public bool visited = true;
+
+            public Polygon()
+            {
+                vertices = new List<Vertex>();
+                edges = new List<Edge>();
+            }
             public void SetVertexBrush(brushesColor _brush)
             {
                 foreach (Vertex v in this.vertices)

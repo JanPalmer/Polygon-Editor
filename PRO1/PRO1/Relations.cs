@@ -25,6 +25,7 @@ namespace PRO1
             edge = _edge;
             edgeLengthSquared = DistanceFromVertexSquared(_edge.v1.point, _edge.v2.point);
             edge.color = Color();
+            edge.relation = this;
         }
         public brushesColor Color()
         {
@@ -69,6 +70,8 @@ namespace PRO1
 
             edge1.color = edge2.color = Color();
             id = ++count;
+            edge1.relation = this;
+            edge2.relation = this;
         }
 
         public brushesColor Color()

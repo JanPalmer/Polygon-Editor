@@ -43,7 +43,8 @@ namespace PRO1
             RelationPerpendicular
         }
 
-        public const int radius = 10, edgeThickness = 4, toleranceSquared = 100, toleranceRadius = 5, textOffset = 10;
+        public const int radius = 10, edgeThickness = 3, toleranceSquared = 100, toleranceRadius = 5, textOffset = 10;
+        public const int indexFontSize = 12;
 
         public Pen[] pensEdge;
         public Graphics graph;
@@ -65,6 +66,8 @@ namespace PRO1
 
         public Edge perpendicularPretendent;
 
+        public Font indexFont;
+
         public ToolTip tooltip;
 
         public void InitializeToolTip(ToolTip ttp)
@@ -80,7 +83,7 @@ namespace PRO1
                 "Current edge drawing algorithm:\n" +
                 "Using the radio buttons in the lower right corner, you can choose which\n" +
                 "algorithm should the app use to draw edges of your polygons.\n" +
-                "The default drawing algorithm is the version provided by Windows Forms.";
+                "The default drawing algorithm is the one provided by Windows Forms.";
             ttp.SetToolTip(buttonHelp, bttnHelp);
             string bttnNewPolygon =
                 "Click to enter Polygon Creation Mode.\n" +
@@ -100,6 +103,7 @@ namespace PRO1
             ttp.SetToolTip(buttonFixedRelation, bttnFixedLengthRel);
             string bttnPerpendicularityRel = "Click to enter Perpendicular Relation Mode\n" +
                 "A Perpendicular Relation will try to keep a pair of edges as perpendicular to each as possible\n" +
+                "Edges in a Perpendicular Relation will try to stay the same length\n" +
                 "Edges belong to the same Perpendicularity Relation if the are both RED and have the same INDEX\n" +
                 "LMB on 2 different edges - create a Perpendicular Relation between them\n" +
                 "LMB or RMB on an edge with a Relation - Delete the Relation\n" +
@@ -107,6 +111,48 @@ namespace PRO1
             ttp.SetToolTip(buttonPerpendicularRelation, bttnPerpendicularityRel);
             string bttnClearField = "Clears the whole drawing field, deleting every polygon";
             ttp.SetToolTip(buttonClearSpace, bttnClearField);
+        }
+
+        public void GenerateSampleScene()
+        {
+            Polygon polygon = new Polygon();
+            Point[] points = new Point[12];
+            points[0] = new Point(100, 100);
+            points[1] = new Point(100, 200);
+            points[2] = new Point(200, 200);
+            points[3] = new Point(300, 200);
+            points[4] = new Point(300, 100);
+
+            for (int i = 0; i < 5; i++) polygon.vertices.Add(new Vertex(points[i], polygon, brushesColor.normal));
+            for (int i = 0; i < 5; i++) polygon.edges.Add(new Edge(polygon.vertices[i], polygon.vertices[(i + 1) % 5], polygon));
+            polygons.Add(polygon);
+            polygon = new Polygon();
+            points[5] = new Point(450, 100);
+            points[6] = new Point(450, 200);
+            points[7] = new Point(550, 200);
+            points[8] = new Point(550, 100);
+            for (int i = 0; i < 4; i++) polygon.vertices.Add(new Vertex(points[5 + i], polygon, brushesColor.normal));
+            for (int i = 0; i < 4; i++) polygon.edges.Add(new Edge(polygon.vertices[i], polygon.vertices[(i + 1) % 4], polygon));
+            polygons.Add(polygon);
+            polygon = new Polygon();
+            points[9] = new Point(250, 300);
+            points[10] = new Point(250, 400);
+            points[11] = new Point(350, 400);
+            for (int i = 0; i < 3; i++) polygon.vertices.Add(new Vertex(points[9 + i], polygon, brushesColor.normal));
+            for (int i = 0; i < 3; i++) polygon.edges.Add(new Edge(polygon.vertices[i], polygon.vertices[(i + 1) % 3], polygon));
+            polygons.Add(polygon);
+
+            RelationPerpendicular relPer;
+            //relPer = new RelationPerpendicular(polygons[0].edges[0], polygons[0].edges[1]);
+            relPer = new RelationPerpendicular(polygons[0].edges[2], polygons[0].edges[3]);
+            relPer = new RelationPerpendicular(polygons[1].edges[0], polygons[0].edges[4]);
+            relPer = new RelationPerpendicular(polygons[1].edges[1], polygons[1].edges[2]);
+            RelationFixedLength relFix = new RelationFixedLength(polygons[1].edges[3]);
+            relFix = new RelationFixedLength(polygons[0].edges[1]);
+            relFix = new RelationFixedLength(polygons[2].edges[0]);
+            relFix = new RelationFixedLength(polygons[2].edges[1]);
+
+            DrawFrame();
         }
 
         public CGP1()
@@ -123,8 +169,14 @@ namespace PRO1
             g.Clear(Color.White);
             g.Dispose();
 
+            indexFont = new Font(new FontFamily("Arial"), indexFontSize, FontStyle.Bold);
+
             tooltip = new ToolTip();
             InitializeToolTip(tooltip);
+            tooltip.AutoPopDelay = 32000;
+            tooltip.InitialDelay = 400;
+
+            GenerateSampleScene();
 
             state = AppState.ready;
         }
@@ -285,6 +337,7 @@ namespace PRO1
                         if (isPressedSpace == true && selectedPolygon != null)
                         {
                             // Remove whole polygon
+                            foreach (Edge edge in selectedPolygon.edges) edge.DiscardRelation();
                             polygons.Remove(selectedPolygon);
                             DrawFrame();
                             return;
@@ -335,8 +388,6 @@ namespace PRO1
                         {
                             // Begin drawing new Polygon
                             tempPolygon = new Polygon();
-                            tempPolygon.vertices = new List<Vertex>();
-                            tempPolygon.edges = new List<Edge>();
                             tempPolygon.vertices.Add(new Vertex(position, tempPolygon, brushesColor.highlight));
                             DrawFrame();
                             state = AppState.newPolygonDrawing;
@@ -390,7 +441,7 @@ namespace PRO1
                         else
                         {
                             RelationFixedLength relation = new RelationFixedLength(selectedEdge);
-                            selectedEdge.relation = relation;
+                            //selectedEdge.relation = relation;
                         }
                         DrawFrame();
                         break;
@@ -431,8 +482,8 @@ namespace PRO1
                             {
                                 // Selected second edge
                                 RelationPerpendicular rel = new RelationPerpendicular(selectedEdge, perpendicularPretendent);
-                                selectedEdge.relation = rel;
-                                perpendicularPretendent.relation = rel;
+                                //selectedEdge.relation = rel;
+                                //perpendicularPretendent.relation = rel;
                                 foreach (Polygon p in polygons) p.visited = false;
                                 perpendicularPretendent.EnforceRelation(null);
                                 perpendicularPretendent = null;
@@ -629,27 +680,29 @@ namespace PRO1
             int x = edge.v1.point.X + (edge.v2.point.X - edge.v1.point.X) / 2 + textOffset;
             int y = edge.v1.point.Y + (edge.v2.point.Y - edge.v1.point.Y) / 2 + textOffset;
             Point p = new Point(x, y);
-            g.DrawString(rel.id.ToString(), DefaultFont, brushesVertex[0], p);
+            g.DrawString(rel.id.ToString(), indexFont, brushesVertex[0], p);
         }
         public void DrawEdges(Graphics g, Polygon polygon)
         {
-            if (polygon.edges.Count <= 0) return;
+            if (polygon == null || polygon.edges == null || polygon.edges.Count <= 0) return;
             foreach (Edge edge in polygon.edges)
             {
+                g.DrawLine(pensEdge[(int)edge.color], edge.v1.point, edge.v2.point);
+
                 // If an edge is part of a Perpendicular Relation, add its relation's index next to it
                 if (edge.relation != null && edge.relation.GetType() == typeof(RelationPerpendicular))
                     AddPerpendicularityRelationIndex(g, edge, (RelationPerpendicular)edge.relation);
-                g.DrawLine(pensEdge[(int)edge.color], edge.v1.point, edge.v2.point);
             }
         }
         public void DrawEdgesBresenham(Graphics g, Polygon polygon)
         {
-            if (polygon.edges.Count <= 0) return;
+            if (polygon == null || polygon.edges == null || polygon.edges.Count <= 0) return;
             foreach (Edge edge in polygon.edges)
             {
+                DrawLineBresenham(g, edge.v1.point, edge.v2.point, GetColorFromBrush(edge.color));
+
                 if (edge.relation != null && edge.relation.GetType() == typeof(RelationPerpendicular))
-                    AddPerpendicularityRelationIndex(graph, edge, (RelationPerpendicular)edge.relation);
-                DrawLineBresenham(graph, edge.v1.point, edge.v2.point, GetColorFromBrush(edge.color));
+                    AddPerpendicularityRelationIndex(g, edge, (RelationPerpendicular)edge.relation);
             }
         }
         public void DrawVertices(Graphics g, Polygon polygon)
