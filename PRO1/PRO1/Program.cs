@@ -9,7 +9,7 @@ namespace PRO1
     static class Program
     {
         /// <summary>
-        ///  The main entry point for the application.
+        ///  Polygon Editor with optional constraints (Relations)
         /// </summary>
         [STAThread]
         static void Main()

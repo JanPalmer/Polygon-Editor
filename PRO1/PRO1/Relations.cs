@@ -7,12 +7,16 @@ namespace PRO1
 {
     public interface IRelation
     {
+        // interface is used so that an Edge can only have one Relation field,
+        // but can take either a Fixed Length Relation or a Perpendicular Relation in that field
         public brushesColor Color();
         public void Enforce(Vertex movedOne);
         public void DiscardRelation();
     }
     public class RelationFixedLength : IRelation
     {
+        // Try to keep an Edge the same length throughout the whole lifetime of the Relation
+
         public readonly Edge edge;
         public readonly int edgeLengthSquared;
 
@@ -50,6 +54,8 @@ namespace PRO1
 
     public class RelationPerpendicular : IRelation
     {
+        // try to keep two Edges as perpendicular to each other as possible
+
         public readonly Edge edge1, edge2;
         public readonly int id;
         public static int count = 0;
@@ -82,9 +88,6 @@ namespace PRO1
         {
             Edge main, toMove;
 
-            main = edge1;
-            toMove = edge2;
-
             if (movedOne == edge1.v1 || movedOne == edge1.v2)
             {
                 main = edge1;
@@ -103,20 +106,13 @@ namespace PRO1
                 (v1, v2) = (v2, v1);
             }
 
-            //double dx = toMove.v1.point.X - toMove.v2.point.X;
-            //double dy = toMove.v1.point.Y - toMove.v2.point.Y;
             double dx = main.v1.point.X - main.v2.point.X;
             double dy = main.v1.point.Y - main.v2.point.Y;
-            //double mainLen = Math.Sqrt((double)DistanceFromVertexSquared(main.v1.point, main.v2.point));
-            //double tangent = dy / dx;
-            //double otherLen = Math.Sqrt((double)DistanceFromVertexSquared(v1.point, v2.point));
 
             v2.ChangePlacement(v1.point.X - (int)dy, v1.point.Y + (int)dx);
 
+            // If Edges belong to different Polygons, Enforce Relations on the other Polygon as well
             if (toMove.parent != main.parent) toMove.EnforceRelation(toMove);
-
-            // GENERALNIE DZIAŁA, NIE DZIAŁA JAK SIĘ POŁĄCZY DWIE KRAWĘDZIE W RÓŻNYCH WIELOKĄTACH
-            // JAKBY WYSYŁA ENFORCE RELATION DO KOLEJNEGO WIELOKĄTA, I POTEM TO WRACA Z POWROTEM
         }
     }
 }

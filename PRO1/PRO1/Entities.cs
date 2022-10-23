@@ -7,6 +7,9 @@ namespace PRO1
 {
     public class Entities
     {
+        // brushesColor is used as an enum to have an easy way to get the index of a color to use for coloring.
+        // An index is needed because a Vertex uses a Brush to be colored, and an Edge uses a Pen, which are different types,
+        // but their respective tables have been made to have the same type of color on the same index, specified by brushesColor
         public enum brushesColor { normal, highlight, RelConstLen, RelPerpendicular}
         public static Color[] colorEdge = { Color.Black, Color.DarkOrange, Color.LightGreen, Color.Red };
         public static Brush[] brushesVertex = { Brushes.Black, Brushes.DarkOrange, Brushes.LightGreen, Brushes.Red };
@@ -42,6 +45,8 @@ namespace PRO1
             }
             public List<Edge> GetEdges()
             {
+                // Returns a list of edges incidental with the Vertex
+
                 List<Edge> list = new List<Edge>();
                 foreach (Edge edge in parent.edges)
                 {
@@ -51,6 +56,8 @@ namespace PRO1
             }
             public List<Vertex> GetNeighbors()
             {
+                // Returns a list of vertices the Vertex's edges connect it to
+
                 List<Vertex> list = new List<Vertex>();
                 foreach (Edge edge in GetEdges())
                 {
@@ -60,6 +67,18 @@ namespace PRO1
             }
             public void EnforceRelation(Edge ignoreEdge)
             {
+                // To perform a full edge update using EnforceRelation, all Polygons have to be first set to be unvisited (visited = false)
+                // (Notice "foreach (Polygon p in polygons) p.visited = false;" before using EnforceRelation in Form1.cs)
+                // The algorithm of EnforceRelation goes through all edges in a manner similar to BFS
+                // Due to how EnforceRelation can be used on both edges and vertices,
+                // I decided to not make a function encapsulating both the foreach and EnforceRelation
+
+                // ignoreEdge - an edge to be ignored while enforcing relations.
+                // Used when a Perpendicular Relation links Edges from different Polygons
+                // (due to how its Enforce is written, the function would be executed on one edge,
+                // then go to the other Polygon and execute again on the same relation, leading to unwanted behaviour)
+                // can be left as 'null' to sweep every edge in a Polygon
+
                 if (parent.visited == true) return;
                 parent.visited = true;
                 foreach (Edge edge in parent.edges) edge.visited = false;
@@ -154,6 +173,8 @@ namespace PRO1
             }
             public void Move(int dx, int dy)
             {
+                // Moves every Vertex in a Polygon
+
                 foreach (Vertex v in vertices)
                 {
                     v.Move(dx, dy);
@@ -163,6 +184,8 @@ namespace PRO1
 
         public static int DistanceFromEdgeSquared(Point p1, Point p2, Point p)
         {
+            // Returns a squared value of distance between Point p and edge p1p2
+
             int A = p.X - p1.X;
             int B = p.Y - p1.Y;
             int C = p2.X - p1.X;
@@ -182,6 +205,8 @@ namespace PRO1
 
         public static int DistanceFromVertexSquared(Point p, Point v)
         {
+            // Returns squared value of distance between Points p and v
+
             int dx = p.X - v.X;
             int dy = p.Y - v.Y;
             return dx * dx + dy * dy;
