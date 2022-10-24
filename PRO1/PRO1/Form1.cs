@@ -90,7 +90,6 @@ namespace PRO1
                 "LMB - Insert new vertex\n" +
                 "RMB - Delete most recent vertex\n" +
                 "Finish a polygon by clicking on the starting vertex\n" +
-                "You can't insert a vertex too close to an already existing one\n" +
                 "Exit Mode by finishing a polygon or clicking this button again.";
             ttp.SetToolTip(buttonNewPolygon, bttnNewPolygon);
             string bttnFixedLengthRel =
@@ -143,7 +142,6 @@ namespace PRO1
             polygons.Add(polygon);
 
             RelationPerpendicular relPer;
-            //relPer = new RelationPerpendicular(polygons[0].edges[0], polygons[0].edges[1]);
             relPer = new RelationPerpendicular(polygons[0].edges[2], polygons[0].edges[3]);
             relPer = new RelationPerpendicular(polygons[1].edges[0], polygons[0].edges[4]);
             relPer = new RelationPerpendicular(polygons[1].edges[1], polygons[1].edges[2]);
